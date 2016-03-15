@@ -1,47 +1,35 @@
-import smtplib
-from email.mime.text import MIMEText
-
-from cliquet.events import ResourceChanged
-from pyramid.settings import asbool
+from cliquet.events import AfterResourceChanged
+from pyramid_mailer import get_mailer
+from pyramid_mailer.message import Message
 
 
-class Mailer():
+def send_notification(event):
+    payload = event.payload
+    storage = event.request.registry.storage
 
-    def __init__(self, server, tls, username, password, sender):
-        self.server = server
-        self.tls = tls
-        self.username = username
-        self.password = password
-        self.sender = sender
+    if payload['resource_name'] != 'record':
+        return
+    collection_record = get_collection_record(storage,
+                                              payload['bucket_id'],
+                                              payload['collection_id'])
+    message = get_message(collection_record, payload)
 
-    def send_email(self, sender, recipients, subject, body):
-        sender = sender or self.sender
-
-        message = MIMEText(body)
-        message['Subject'] = subject
-        message['From'] = sender
-        message['To'] = ", ".join(recipients)
-
-        server = smtplib.SMTP(self.server)
-        if self.tls:
-            server.starttls()
-        if self.username and self.password:
-            server.login(self.username, self.password)
-        server.sendmail(sender, recipients, message.as_string())
-        server.quit()
+    if message:
+        mailer = get_mailer(event.request)
+        mailer.send(message)
 
 
-def get_collection_record(storage, payload):
-    parent_id = '/buckets/%s' % payload['bucket_id']
-    collection_id = 'collection'
+def get_collection_record(storage, bucket_id, collection_id):
+    parent_id = '/buckets/%s' % bucket_id
+    record_type = 'collection'
 
     return storage.get(
         parent_id=parent_id,
-        collection_id=collection_id,
-        object_id=payload['collection_id'])
+        collection_id=record_type,
+        object_id=collection_id)
 
 
-def get_emailer_info(collection_record, payload):
+def get_message(collection_record, payload):
     emailer_config = collection_record.get('kinto-emailer', {})
     current_action = '.'.join((
         payload['resource_name'],
@@ -51,47 +39,28 @@ def get_emailer_info(collection_record, payload):
         return
     selected_config = emailer_config[current_action]
 
-    return {
-        'template': selected_config['template'],
-        'recipients': selected_config['recipients'],
-        'sender': selected_config.get('sender')
-    }
+    msg = selected_config['template'].format(**payload)
+    subject = selected_config.get('subject', 'New message').format(**payload)
+
+    return Message(subject=subject,
+                   sender=selected_config.get('sender'),
+                   recipients=selected_config['recipients'],
+                   body=msg)
 
 
 def includeme(config):
-    settings = config.get_settings()
-    mailer = Mailer(
-        server=settings.get('emailer.server', 'localhost'),
-        tls=asbool(settings.get('emailer.server', False)),
-        username=settings.get('emailer.username'),
-        password=settings.get('emailer.password'),
-        sender=settings['emailer.sender'])
+    # Include the mailer
+    config.include('pyramid_mailer')
 
     # Expose the capabilities in the root endpoint.
     message = "Provide emailing capabilities to the server."
-    docs = "https://github.com/Kinto/kinto-emailer"
+    docs = "https://github.com/Kinto/kinto-emailer/"
     config.add_api_capability("emailer", message, docs)
 
     # Listen to resource change events, to check if a new signature is
     # requested.
-    def send_notification(event):
-        payload = event.payload
-        storage = event.request.registry.storage
-        if payload['resource_name'] != 'record':
-            return
-        collection_record = get_collection_record(storage, payload)
-        info = get_emailer_info(collection_record, payload)
-        if info:
-            msg = info['template'].format(**payload)
-            subject = info.get('subject', 'New message').format(**payload)
-            mailer.send_email(
-                sender=info['sender'],
-                recipients=info['recipients'],
-                subject=subject,
-                body=msg)
-
     config.add_subscriber(
         send_notification,
-        ResourceChanged,
+        AfterResourceChanged,
         for_actions=('create', 'update', 'delete'),
         for_resources=('record'))
