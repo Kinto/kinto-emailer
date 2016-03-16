@@ -16,8 +16,8 @@ matrix:
           WITH=kinto-master
       install:
         - pip install tox
-        - .venv/bin/pip install -U https://github.com/Kinto/kinto/zipball/master
         - make install-kinto
+        - pip install -U https://github.com/Kinto/kinto/tarball/master
         - make run-kinto &
     - env:
         - TOX_ENV=functional
