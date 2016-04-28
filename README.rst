@@ -1,7 +1,7 @@
 Kinto Emailer
 #############
 
-`Kinto <https://kinto.readthedocs.org>`_ is a minimalist storage for your web
+`Kinto <https://kinto.readthedocs.io>`_ is a minimalist storage for your web
 applications. Sometimes, it might be useful to send emails when some events
 arise (e.g. new records have been created). That's where this project can help!
 
