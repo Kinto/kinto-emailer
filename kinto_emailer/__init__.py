@@ -7,8 +7,13 @@ def send_notification(event):
     payload = event.payload
     storage = event.request.registry.storage
 
-    if payload['resource_name'] != 'record':
+    resource_name = payload['resource_name']
+    action = payload.get('action')
+    is_record = resource_name == 'record'
+    is_collection_update = resource_name == 'collection' and action == 'update'
+    if not is_record and not is_collection_update:
         return
+
     collection_record = get_collection_record(storage,
                                               payload['bucket_id'],
                                               payload['collection_id'])
@@ -63,4 +68,4 @@ def includeme(config):
         send_notification,
         AfterResourceChanged,
         for_actions=('create', 'update', 'delete'),
-        for_resources=('record'))
+        for_resources=('record', 'collection'))
