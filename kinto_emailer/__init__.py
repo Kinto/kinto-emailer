@@ -1,4 +1,4 @@
-from cliquet.events import AfterResourceChanged
+from kinto.core.events import AfterResourceChanged
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
