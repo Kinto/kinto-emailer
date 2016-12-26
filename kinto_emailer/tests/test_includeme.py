@@ -1,9 +1,17 @@
 import mock
+import os
 import unittest
+
+import configparser
+
+
 from kinto import main as kinto_main
 from kinto.core.events import AfterResourceChanged
 from kinto.core.testing import BaseWebTest
 from kinto_emailer import get_message, get_collection_record, send_notification
+
+
+HERE = os.path.dirname(os.path.abspath(__file__))
 
 COLLECTION_RECORD = {
     'kinto-emailer': {
@@ -20,13 +28,15 @@ COLLECTION_RECORD = {
 class PluginSetupTest(BaseWebTest, unittest.TestCase):
     entry_point = kinto_main
     api_prefix = "v1"
+    config = 'config/kinto.ini'
 
-    def get_app_settings(self, extras):
-        settings = super(PluginSetupTest, self).get_app_settings(extras)
-        settings.update({
-            'includes': ['kinto.plugins.default_bucket', 'kinto_emailer'],
-            'emailer.sender': 'kinto.email@restmail.net',
-        })
+    def get_app_settings(self, extras=None):
+        ini_path = os.path.join(HERE, self.config)
+        config = configparser.ConfigParser()
+        config.read(ini_path)
+        settings = dict(config.items('app:main'))
+        if extras:
+            settings.update(extras)
         return settings
 
 
@@ -87,9 +97,9 @@ class PluginSetupTest(BaseWebTest, unittest.TestCase):
 
     def test_send_notification_is_called_on_new_record(self):
         with mock.patch('kinto_emailer.send_notification') as mocked:
-            import pdb; pdb.set_trace()
-            self.app.post_json('/buckets/default/collections/foobar/records',
-                               headers={'Authorization': 'Basic bmF0aW06'})
+            app = self.make_app()
+            app.post_json('/buckets/default/collections/foobar/records',
+                          headers={'Authorization': 'Basic bmF0aW06'})
             event = mocked.call_args[0][0]
             assert isinstance(event, AfterResourceChanged)
 
