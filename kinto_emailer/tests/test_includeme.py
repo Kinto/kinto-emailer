@@ -134,7 +134,6 @@ class PluginTest(unittest.TestCase):
 
         assert message.subject == 'New message'
 
-
     def test_send_notification_ignore_non_record_events(self):
         event = mock.MagicMock()
         event.payload = {'resource_name': 'bucket'}
