@@ -39,7 +39,6 @@ class PluginSetupTest(BaseWebTest, unittest.TestCase):
             settings.update(extras)
         return settings
 
-
     def test_capability_is_exposed(self):
         resp = self.app.get('/')
         capabilities = resp.json['capabilities']
