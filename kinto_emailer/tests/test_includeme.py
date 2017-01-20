@@ -79,14 +79,6 @@ class PluginSetupTest(BaseWebTest, unittest.TestCase):
             event = mocked.call_args[0][0]
             assert isinstance(event, AfterResourceChanged)
 
-    def test_send_notification_is_called_on_new_record(self):
-        with mock.patch('kinto_emailer.send_notification') as mocked:
-            app = self.make_app()
-            app.post_json('/buckets/default/collections/foobar/records',
-                          headers={'Authorization': 'Basic bmF0aW06'})
-            event = mocked.call_args[0][0]
-            assert isinstance(event, AfterResourceChanged)
-
 
 class PluginTest(unittest.TestCase):
     def test_get_message_returns_a_configured_message_for_records(self):
