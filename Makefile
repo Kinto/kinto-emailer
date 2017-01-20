@@ -3,6 +3,7 @@ VENV := $(shell echo $${VIRTUAL_ENV-$$PWD/.venv})
 PYTHON = $(VENV)/bin/python
 DEV_STAMP = $(VENV)/.dev_env_installed.stamp
 INSTALL_STAMP = $(VENV)/.install.stamp
+TEMPDIR := $(shell mktemp -d)
 
 .IGNORE: clean
 .PHONY: all install virtualenv tests install-dev tests-once
@@ -25,7 +26,6 @@ $(PYTHON):
 	virtualenv $(VENV)
 
 build-requirements:
-	TEMPDIR=$(shell mktemp -d)
 	$(VIRTUALENV) $(TEMPDIR)
 	$(TEMPDIR)/bin/pip install -U pip
 	$(TEMPDIR)/bin/pip install -Ue .
