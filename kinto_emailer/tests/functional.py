@@ -21,7 +21,7 @@ class FunctionalTest(unittest.TestCase):
         super(FunctionalTest, self).__init__(*args, **kwargs)
 
         self.emailer_config = configparser.RawConfigParser()
-        self.emailer_config.read(os.path.join(__HERE__, 'config/emailer.ini'))
+        self.emailer_config.read(os.path.join(__HERE__, 'config/kinto.ini'))
 
         # Setup the kinto clients for the source and destination.
         self._auth = DEFAULT_AUTH
