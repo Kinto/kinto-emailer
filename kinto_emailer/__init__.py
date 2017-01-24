@@ -8,9 +8,9 @@ def send_notification(event):
     payload = event.payload
     storage = event.request.registry.storage
 
-    collection_record = get_collection_record(storage,
-                                              payload['bucket_id'],
-                                              payload['collection_id'])
+    collection_record = _get_collection_record(storage,
+                                               payload['bucket_id'],
+                                               payload['collection_id'])
     message = get_message(collection_record, payload)
 
     if message:
@@ -18,7 +18,7 @@ def send_notification(event):
         mailer.send(message)
 
 
-def get_collection_record(storage, bucket_id, collection_id):
+def _get_collection_record(storage, bucket_id, collection_id):
     parent_id = '/buckets/%s' % bucket_id
     record_type = 'collection'
 
