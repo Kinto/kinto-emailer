@@ -4,11 +4,19 @@ from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with codecs.open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
-    README = f.read()
+def read_file(filename):
+    """Open a related file and return its content."""
+    with codecs.open(os.path.join(here, filename), encoding='utf-8') as f:
+        content = f.read()
+    return content
+
+README = read_file('README.rst')
+CHANGELOG = read_file('CHANGELOG.rst')
+CONTRIBUTORS = read_file('CONTRIBUTORS.rst')
+
 
 REQUIREMENTS = [
-    'kinto',
+    'kinto>5',
     'pyramid<1.8',
     'pyramid_mailer',
 ]
@@ -16,7 +24,7 @@ REQUIREMENTS = [
 setup(name='kinto-emailer',
       version='0.1.0.dev0',
       description='Kinto emailer plugin',
-      long_description=README,
+      long_description=README + "\n\n" + CHANGELOG + "\n\n" + CONTRIBUTORS,
       license='Apache License (2.0)',
       classifiers=[
           "Programming Language :: Python",

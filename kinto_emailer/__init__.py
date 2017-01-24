@@ -8,24 +8,16 @@ def send_notification(event):
     payload = event.payload
     storage = event.request.registry.storage
 
-    resource_name = payload['resource_name']
-    action = payload.get('action')
-    is_record = resource_name == 'record'
-    is_collection_update = resource_name == 'collection' and action == 'update'
-    if not is_record and not is_collection_update:
-        return
-
-    collection_record = get_collection_record(storage,
-                                              payload['bucket_id'],
-                                              payload['collection_id'])
-    message = get_message(collection_record, payload)
-
-    if message:
-        mailer = get_mailer(event.request)
+    collection_record = _get_collection_record(storage,
+                                               payload['bucket_id'],
+                                               payload['collection_id'])
+    messages = get_messages(collection_record, payload)
+    mailer = get_mailer(event.request)
+    for message in messages:
         mailer.send(message)
 
 
-def get_collection_record(storage, bucket_id, collection_id):
+def _get_collection_record(storage, bucket_id, collection_id):
     parent_id = '/buckets/%s' % bucket_id
     record_type = 'collection'
 
@@ -35,23 +27,26 @@ def get_collection_record(storage, bucket_id, collection_id):
         object_id=collection_id)
 
 
-def get_message(collection_record, payload):
-    emailer_config = collection_record.get('kinto-emailer', {})
-    current_action = '.'.join((
-        payload['resource_name'],
-        payload['action']
-    ))
-    if current_action not in emailer_config.keys():
-        return
-    selected_config = emailer_config[current_action]
+def get_messages(collection_record, payload):
+    hooks = collection_record.get('kinto-emailer', {}).get('hooks', [])
+    messages = []
+    for hook in hooks:
+        # Filter out hook if it doesn't meet current event attributes, and keep
+        # if nothing is specified.
+        conditions_met = all([field not in hook or field not in payload or
+                              hook[field] == payload[field]
+                              for field in ('action', 'resource_name', 'id')])
+        if not conditions_met:
+            continue
 
-    msg = selected_config['template'].format(**payload)
-    subject = selected_config.get('subject', 'New message').format(**payload)
+        msg = hook['template'].format(**payload)
+        subject = hook.get('subject', 'New message').format(**payload)
 
-    return Message(subject=subject,
-                   sender=selected_config.get('sender'),
-                   recipients=selected_config['recipients'],
-                   body=msg)
+        messages.append(Message(subject=subject,
+                                sender=hook.get('sender'),
+                                recipients=hook['recipients'],
+                                body=msg))
+    return messages
 
 
 def includeme(config):
@@ -65,10 +60,6 @@ def includeme(config):
     docs = "https://github.com/Kinto/kinto-emailer/"
     config.add_api_capability("emailer", message, docs)
 
-    # Listen to resource change events, to check if a new signature is
-    # requested.
-    config.add_subscriber(
-        send_notification,
-        AfterResourceChanged,
-        for_actions=('create', 'update', 'delete'),
-        for_resources=('record', 'collection'))
+    # Listen to collection and record change events.
+    config.add_subscriber(send_notification, AfterResourceChanged,
+                          for_resources=('record', 'collection'))

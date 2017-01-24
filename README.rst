@@ -23,11 +23,13 @@ The following examples are defined on buckets:
 
   {
     "kinto-emailer": {
-      "record.create": {
+      "hooks": [{
+        "resource_name": "record",
+        "action": "create",
         "template": "Hi, a new record '{uri}' has just been created in the collection '{bucket_id}/{collection_id}'",
         "recipients": ['Security reviewers <security-reviews@mozilla.com>'],
         "sender": "Kinto team <developers@kinto-storage.org>"
-      }
+      }]
     }
   }
 

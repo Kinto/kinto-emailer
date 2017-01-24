@@ -8,19 +8,28 @@ import configparser
 from kinto import main as kinto_main
 from kinto.core.events import AfterResourceChanged
 from kinto.core.testing import BaseWebTest
-from kinto_emailer import get_message, get_collection_record, send_notification
+from kinto_emailer import get_messages, send_notification
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 COLLECTION_RECORD = {
     'kinto-emailer': {
-        'record.update': {
+        'hooks': [{
+            'resource_name': 'record',
+            'action': 'update',
             'sender': 'kinto@restmail.net',
-            'subject': 'Configured subject',
+            'subject': 'Record update',
             'template': 'Bonjour les amis.',
             'recipients': ['kinto-emailer@restmail.net'],
-        }
+        }, {
+            'resource_name': 'collection',
+            'action': 'update',
+            'sender': 'kinto@restmail.net',
+            'subject': 'Collection update',
+            'template': 'Bonjour les amis on collection update.',
+            'recipients': ['kinto-emailer@restmail.net'],
+        }]
     }
 }
 
@@ -49,19 +58,6 @@ class PluginSetupTest(BaseWebTest, unittest.TestCase):
         }
         self.assertEqual(expected, capabilities['emailer'])
 
-    def test_get_collection_record(self):
-        storage = mock.MagicMock()
-
-        get_collection_record(
-            storage,
-            bucket_id="default",
-            collection_id="foobar")
-
-        storage.get.assert_called_with(
-            collection_id='collection',
-            parent_id='/buckets/default',
-            object_id='foobar')
-
     def test_send_notification_is_called_on_new_record(self):
         with mock.patch('kinto_emailer.send_notification') as mocked:
             app = self.make_app()
@@ -80,82 +76,124 @@ class PluginSetupTest(BaseWebTest, unittest.TestCase):
             assert isinstance(event, AfterResourceChanged)
 
 
-class PluginTest(unittest.TestCase):
-    def test_get_message_returns_a_configured_message_for_records(self):
-        message = get_message(COLLECTION_RECORD,
-                              {'resource_name': 'record',
-                               'action': 'update'})
+class GetMessagesTest(unittest.TestCase):
+    def test_get_messages_returns_configured_messages_for_records(self):
+        payload = {'resource_name': 'record', 'action': 'update'}
+        message, = get_messages(COLLECTION_RECORD, payload)
 
-        assert message.subject == 'Configured subject'
+        assert message.subject == 'Record update'
         assert message.sender == 'kinto@restmail.net'
         assert message.recipients == ['kinto-emailer@restmail.net']
         assert message.body == 'Bonjour les amis.'
 
-    def test_get_message_returns_a_configured_message_for_collection_update(self):
-        collection_record = {
-            'kinto-emailer': {
-                'collection.update': {
-                    'sender': 'kinto@restmail.net',
-                    'subject': 'Configured subject',
-                    'template': 'Bonjour les amis on collection update.',
-                    'recipients': ['kinto-emailer@restmail.net'],
-                }
-            }
-        }
+    def test_get_messages_returns_a_configured_message_for_collection_update(self):
+        payload = {'resource_name': 'collection', 'action': 'update'}
+        message, = get_messages(COLLECTION_RECORD, payload)
 
-        message = get_message(collection_record,
-                              {'resource_name': 'collection',
-                               'action': 'update'})
-
-        assert message.subject == 'Configured subject'
+        assert message.subject == 'Collection update'
         assert message.sender == 'kinto@restmail.net'
         assert message.recipients == ['kinto-emailer@restmail.net']
         assert message.body == 'Bonjour les amis on collection update.'
 
-    def test_get_emailer_info_return_none_if_emailer_not_configured(self):
-        message = get_message({}, {'resource_name': 'record',
-                                   'action': 'update'})
-        assert message is None
+    def test_get_emailer_info_returns_empty_list_if_emailer_not_configured(self):
+        payload = {'resource_name': 'record', 'action': 'update'}
+        messages = get_messages({}, payload)
+        assert len(messages) == 0
 
-    def test_get_message_returns_default_subject_to_new_message(self):
+    def test_get_messages_returns_default_subject_to_new_message(self):
         collection_record = {
             'kinto-emailer': {
-                'record.update': {
-                    'sender': 'kinto@restmail.net',
+                'hooks': [{
                     'template': 'Bonjour les amis.',
                     'recipients': ['kinto-emailer@restmail.net'],
-                }
+                }]
             }
         }
-
-        message = get_message(collection_record,
-                              {'resource_name': 'record',
-                               'action': 'update'})
+        payload = {'resource_name': 'record', 'action': 'update'}
+        message, = get_messages(collection_record, payload)
 
         assert message.subject == 'New message'
 
-    def test_get_collection_record(self):
-        storage = mock.MagicMock()
+    def test_get_messages_returns_several_messages_if_hooks_match(self):
+        collection_record = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'template': 'Bonjour les amis.',
+                    'recipients': ['me@you.com'],
+                }, {
+                    'template': 'Bonjour les amies.',
+                    'recipients': ['you@me.com'],
+                }]
+            }
+        }
+        payload = {'resource_name': 'record', 'action': 'update'}
+        messages = get_messages(collection_record, payload)
 
-        get_collection_record(
-            storage,
-            bucket_id="default",
-            collection_id="foobar")
+        assert len(messages) == 2
 
-        storage.get.assert_called_with(
-            collection_id='collection',
-            parent_id='/buckets/default',
-            object_id='foobar')
+    def test_get_messages_can_filter_by_id(self):
+        collection_record = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'id': 'poll',
+                    'template': 'Poll changed.',
+                    'recipients': ['me@you.com'],
+                }]
+            }
+        }
+        payload = {'resource_name': 'record', 'action': 'update', 'id': 'abc'}
+        messages = get_messages(collection_record, payload)
 
-    def test_send_notification_ignore_non_record_events(self):
-        event = mock.MagicMock()
-        event.payload = {'resource_name': 'bucket'}
+        assert len(messages) == 0
 
-        with mock.patch('kinto_emailer.get_collection_record') as mocked:
-            send_notification(event)
-            assert not mocked.called
+    def test_get_messages_ignores_resource_if_not_specified(self):
+        collection_record = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'template': 'Poll changed.',
+                    'recipients': ['me@you.com'],
+                }]
+            }
+        }
 
+        payload = {'resource_name': 'record', 'action': 'update'}
+        messages = get_messages(collection_record, payload)
+        assert len(messages) == 1
+
+        payload = {'resource_name': 'collection', 'action': 'update'}
+        messages = get_messages(collection_record, payload)
+        assert len(messages) == 1
+
+    def test_get_messages_ignores_action_if_not_specified(self):
+        collection_record = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'template': 'Poll changed.',
+                    'recipients': ['me@you.com'],
+                }]
+            }
+        }
+
+        payload = {'resource_name': 'record', 'action': 'create'}
+        messages = get_messages(collection_record, payload)
+        assert len(messages) == 1
+
+        payload = {'resource_name': 'record', 'action': 'update'}
+        messages = get_messages(collection_record, payload)
+        assert len(messages) == 1
+
+
+
+class SendNotificationTest(unittest.TestCase):
     def test_send_notification_does_not_call_the_mailer_if_no_message(self):
+        event = mock.MagicMock()
+        event.request.registry.storage.get.return_value = {}
+
+        with mock.patch('kinto_emailer.get_mailer') as get_mailer:
+            send_notification(event)
+            assert not get_mailer().send.called
+
+    def test_send_notification_calls_the_mailer_if_match_event(self):
         event = mock.MagicMock()
         event.payload = {
             'resource_name': 'record',
@@ -163,11 +201,8 @@ class PluginTest(unittest.TestCase):
             'bucket_id': 'default',
             'collection_id': 'foobar'
         }
+        event.request.registry.storage.get.return_value = COLLECTION_RECORD
 
-        with mock.patch(
-                'kinto_emailer.get_collection_record',
-                return_value=COLLECTION_RECORD) as get_collection_record:
-            with mock.patch('kinto_emailer.get_mailer') as get_mailer:
-                send_notification(event)
-                assert get_collection_record.called
-                assert get_mailer().send.called
+        with mock.patch('kinto_emailer.get_mailer') as get_mailer:
+            send_notification(event)
+            assert get_mailer().send.called
