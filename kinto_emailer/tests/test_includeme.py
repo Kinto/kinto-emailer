@@ -8,7 +8,7 @@ import configparser
 from kinto import main as kinto_main
 from kinto.core.events import AfterResourceChanged
 from kinto.core.testing import BaseWebTest
-from kinto_emailer import get_message, send_notification
+from kinto_emailer import get_messages, send_notification
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -76,31 +76,31 @@ class PluginSetupTest(BaseWebTest, unittest.TestCase):
             assert isinstance(event, AfterResourceChanged)
 
 
-class GetMessageTest(unittest.TestCase):
-    def test_get_message_returns_a_configured_message_for_records(self):
+class GetMessagesTest(unittest.TestCase):
+    def test_get_messages_returns_configured_messages_for_records(self):
         payload = {'resource_name': 'record', 'action': 'update'}
-        message = get_message(COLLECTION_RECORD, payload)
+        message, = get_messages(COLLECTION_RECORD, payload)
 
         assert message.subject == 'Record update'
         assert message.sender == 'kinto@restmail.net'
         assert message.recipients == ['kinto-emailer@restmail.net']
         assert message.body == 'Bonjour les amis.'
 
-    def test_get_message_returns_a_configured_message_for_collection_update(self):
+    def test_get_messages_returns_a_configured_message_for_collection_update(self):
         payload = {'resource_name': 'collection', 'action': 'update'}
-        message = get_message(COLLECTION_RECORD, payload)
+        message, = get_messages(COLLECTION_RECORD, payload)
 
         assert message.subject == 'Collection update'
         assert message.sender == 'kinto@restmail.net'
         assert message.recipients == ['kinto-emailer@restmail.net']
         assert message.body == 'Bonjour les amis on collection update.'
 
-    def test_get_emailer_info_return_none_if_emailer_not_configured(self):
+    def test_get_emailer_info_returns_empty_list_if_emailer_not_configured(self):
         payload = {'resource_name': 'record', 'action': 'update'}
-        message = get_message({}, payload)
-        assert message is None
+        messages = get_messages({}, payload)
+        assert len(messages) == 0
 
-    def test_get_message_returns_default_subject_to_new_message(self):
+    def test_get_messages_returns_default_subject_to_new_message(self):
         collection_record = {
             'kinto-emailer': {
                 'hooks': [{
@@ -110,10 +110,26 @@ class GetMessageTest(unittest.TestCase):
             }
         }
         payload = {'resource_name': 'record', 'action': 'update'}
-        message = get_message(collection_record, payload)
+        message, = get_messages(collection_record, payload)
 
         assert message.subject == 'New message'
 
+    def test_get_messages_returns_several_messages_if_hooks_match(self):
+        collection_record = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'template': 'Bonjour les amis.',
+                    'recipients': ['me@you.com'],
+                }, {
+                    'template': 'Bonjour les amies.',
+                    'recipients': ['you@me.com'],
+                }]
+            }
+        }
+        payload = {'resource_name': 'record', 'action': 'update'}
+        messages = get_messages(collection_record, payload)
+
+        assert len(messages) == 2
 
 class SendNotificationTest(unittest.TestCase):
     def test_send_notification_does_not_call_the_mailer_if_no_message(self):

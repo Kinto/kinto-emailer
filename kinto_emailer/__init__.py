@@ -11,10 +11,9 @@ def send_notification(event):
     collection_record = _get_collection_record(storage,
                                                payload['bucket_id'],
                                                payload['collection_id'])
-    message = get_message(collection_record, payload)
-
-    if message:
-        mailer = get_mailer(event.request)
+    messages = get_messages(collection_record, payload)
+    mailer = get_mailer(event.request)
+    for message in messages:
         mailer.send(message)
 
 
@@ -28,8 +27,9 @@ def _get_collection_record(storage, bucket_id, collection_id):
         object_id=collection_id)
 
 
-def get_message(collection_record, payload):
+def get_messages(collection_record, payload):
     hooks = collection_record.get('kinto-emailer', {}).get('hooks', [])
+    messages = []
     for hook in hooks:
         conditions_met = all([hook.get(field, payload[field]) == payload[field]
                               for field in ('action', 'resource_name')])
@@ -39,10 +39,11 @@ def get_message(collection_record, payload):
         msg = hook['template'].format(**payload)
         subject = hook.get('subject', 'New message').format(**payload)
 
-        return Message(subject=subject,
-                       sender=hook.get('sender'),
-                       recipients=hook['recipients'],
-                       body=msg)
+        messages.append(Message(subject=subject,
+                                sender=hook.get('sender'),
+                                recipients=hook['recipients'],
+                                body=msg))
+    return messages
 
 
 def includeme(config):
