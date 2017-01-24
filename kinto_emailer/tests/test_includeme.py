@@ -182,11 +182,35 @@ class GetMessagesTest(unittest.TestCase):
         messages = get_messages(collection_record, payload)
         assert len(messages) == 1
 
+    def test_get_messages_can_filter_by_event_class(self):
+        collection_record = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'event': 'kinto_signer.events.ReviewRequested',
+                    'template': 'Poll changed.',
+                    'recipients': ['me@you.com'],
+                }]
+            }
+        }
+
+        payload = {
+            'event': 'kinto.core.events.AfterResourceChanged',
+            'resource_name': 'record',
+            'action': 'create'
+        }
+        messages = get_messages(collection_record, payload)
+        assert len(messages) == 0
 
 
 class SendNotificationTest(unittest.TestCase):
     def test_send_notification_does_not_call_the_mailer_if_no_message(self):
         event = mock.MagicMock()
+        event.payload = {
+            'resource_name': 'record',
+            'action': 'update',
+            'bucket_id': 'default',
+            'collection_id': 'foobar'
+        }
         event.request.registry.storage.get.return_value = {}
 
         with mock.patch('kinto_emailer.get_mailer') as get_mailer:
