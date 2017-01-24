@@ -131,6 +131,59 @@ class GetMessagesTest(unittest.TestCase):
 
         assert len(messages) == 2
 
+    def test_get_messages_can_filter_by_id(self):
+        collection_record = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'id': 'poll',
+                    'template': 'Poll changed.',
+                    'recipients': ['me@you.com'],
+                }]
+            }
+        }
+        payload = {'resource_name': 'record', 'action': 'update', 'id': 'abc'}
+        messages = get_messages(collection_record, payload)
+
+        assert len(messages) == 0
+
+    def test_get_messages_ignores_resource_if_not_specified(self):
+        collection_record = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'template': 'Poll changed.',
+                    'recipients': ['me@you.com'],
+                }]
+            }
+        }
+
+        payload = {'resource_name': 'record', 'action': 'update'}
+        messages = get_messages(collection_record, payload)
+        assert len(messages) == 1
+
+        payload = {'resource_name': 'collection', 'action': 'update'}
+        messages = get_messages(collection_record, payload)
+        assert len(messages) == 1
+
+    def test_get_messages_ignores_action_if_not_specified(self):
+        collection_record = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'template': 'Poll changed.',
+                    'recipients': ['me@you.com'],
+                }]
+            }
+        }
+
+        payload = {'resource_name': 'record', 'action': 'create'}
+        messages = get_messages(collection_record, payload)
+        assert len(messages) == 1
+
+        payload = {'resource_name': 'record', 'action': 'update'}
+        messages = get_messages(collection_record, payload)
+        assert len(messages) == 1
+
+
+
 class SendNotificationTest(unittest.TestCase):
     def test_send_notification_does_not_call_the_mailer_if_no_message(self):
         event = mock.MagicMock()
