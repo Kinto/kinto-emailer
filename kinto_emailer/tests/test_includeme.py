@@ -146,14 +146,6 @@ class PluginTest(unittest.TestCase):
             parent_id='/buckets/default',
             object_id='foobar')
 
-    def test_send_notification_ignore_non_record_events(self):
-        event = mock.MagicMock()
-        event.payload = {'resource_name': 'bucket'}
-
-        with mock.patch('kinto_emailer.get_collection_record') as mocked:
-            send_notification(event)
-            assert not mocked.called
-
     def test_send_notification_does_not_call_the_mailer_if_no_message(self):
         event = mock.MagicMock()
         event.payload = {
