@@ -147,14 +147,6 @@ class PluginTest(unittest.TestCase):
             parent_id='/buckets/default',
             object_id='foobar')
 
-    def test_send_notification_is_called_on_new_record(self):
-        with mock.patch('kinto_emailer.send_notification') as mocked:
-            app = self.make_app()
-            app.post_json('/buckets/default/collections/foobar/records',
-                          headers={'Authorization': 'Basic bmF0aW06'})
-            event = mocked.call_args[0][0]
-            assert isinstance(event, AfterResourceChanged)
-
     def test_send_notification_ignore_non_record_events(self):
         event = mock.MagicMock()
         event.payload = {'resource_name': 'bucket'}

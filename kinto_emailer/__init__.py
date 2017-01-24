@@ -1,4 +1,5 @@
 from kinto.core.events import AfterResourceChanged
+from pyramid.settings import asbool
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
@@ -55,7 +56,9 @@ def get_message(collection_record, payload):
 
 def includeme(config):
     # Include the mailer
-    config.include('pyramid_mailer')
+    settings = config.get_settings()
+    debug = asbool(settings.get('mail.debug', 'false'))
+    config.include('pyramid_mailer' + ('.debug' if debug else ''))
 
     # Expose the capabilities in the root endpoint.
     message = "Provide emailing capabilities to the server."
