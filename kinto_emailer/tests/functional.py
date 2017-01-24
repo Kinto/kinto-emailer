@@ -59,7 +59,7 @@ class FunctionalTest(unittest.TestCase):
 
         record = self.client.create_record({'foo': 'bar'})['data']
 
-        filename = sorted(glob('mail/*.msg'))[0]
+        filename = sorted(glob('mail/*.eml'))[0]
         with open(filename, 'r') as f:
             body = f.read()
 
