@@ -36,22 +36,20 @@ def get_collection_record(storage, bucket_id, collection_id):
 
 
 def get_message(collection_record, payload):
-    emailer_config = collection_record.get('kinto-emailer', {})
-    current_action = '.'.join((
-        payload['resource_name'],
-        payload['action']
-    ))
-    if current_action not in emailer_config.keys():
-        return
-    selected_config = emailer_config[current_action]
+    hooks = collection_record.get('kinto-emailer', {}).get('hooks', [])
+    for hook in hooks:
+        conditions_met = all([hook.get(field, payload[field]) == payload[field]
+                              for field in ('action', 'resource_name')])
+        if not conditions_met:
+            continue
 
-    msg = selected_config['template'].format(**payload)
-    subject = selected_config.get('subject', 'New message').format(**payload)
+        msg = hook['template'].format(**payload)
+        subject = hook.get('subject', 'New message').format(**payload)
 
-    return Message(subject=subject,
-                   sender=selected_config.get('sender'),
-                   recipients=selected_config['recipients'],
-                   body=msg)
+        return Message(subject=subject,
+                       sender=hook.get('sender'),
+                       recipients=hook['recipients'],
+                       body=msg)
 
 
 def includeme(config):

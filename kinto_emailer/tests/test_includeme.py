@@ -15,12 +15,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 COLLECTION_RECORD = {
     'kinto-emailer': {
-        'record.update': {
+        'hooks': [{
+            'resource_name': 'record',
+            'action': 'update',
             'sender': 'kinto@restmail.net',
             'subject': 'Configured subject',
             'template': 'Bonjour les amis.',
             'recipients': ['kinto-emailer@restmail.net'],
-        }
+        }]
     }
 }
 
@@ -94,18 +96,17 @@ class PluginTest(unittest.TestCase):
     def test_get_message_returns_a_configured_message_for_collection_update(self):
         collection_record = {
             'kinto-emailer': {
-                'collection.update': {
+                'hooks': [{
                     'sender': 'kinto@restmail.net',
                     'subject': 'Configured subject',
                     'template': 'Bonjour les amis on collection update.',
                     'recipients': ['kinto-emailer@restmail.net'],
-                }
+                }]
             }
         }
 
-        message = get_message(collection_record,
-                              {'resource_name': 'collection',
-                               'action': 'update'})
+        payload = {'resource_name': 'collection', 'action': 'update'}
+        message = get_message(collection_record, payload)
 
         assert message.subject == 'Configured subject'
         assert message.sender == 'kinto@restmail.net'
@@ -120,17 +121,15 @@ class PluginTest(unittest.TestCase):
     def test_get_message_returns_default_subject_to_new_message(self):
         collection_record = {
             'kinto-emailer': {
-                'record.update': {
+                'hooks': [{
                     'sender': 'kinto@restmail.net',
                     'template': 'Bonjour les amis.',
                     'recipients': ['kinto-emailer@restmail.net'],
-                }
+                }]
             }
         }
-
-        message = get_message(collection_record,
-                              {'resource_name': 'record',
-                               'action': 'update'})
+        payload = {'resource_name': 'record', 'action': 'update'}
+        message = get_message(collection_record, payload)
 
         assert message.subject == 'New message'
 

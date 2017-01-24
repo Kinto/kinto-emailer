@@ -49,11 +49,13 @@ class FunctionalTest(unittest.TestCase):
         self.client.create_bucket()
         self.client.create_collection(data={
             "kinto-emailer": {
-                'record.create': {
+                'hooks': [{
+                    "resource_name": "record",
+                    "action": "create",
                     "subject": "New email",
                     "template": "New {bucket_id}/{collection_id}/{record_id}.",
                     "recipients": ['kinto-emailer@restmail.net'],
-                }
+                }]
             }
         })
 
