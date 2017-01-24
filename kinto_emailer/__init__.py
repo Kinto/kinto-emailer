@@ -31,6 +31,8 @@ def get_messages(collection_record, payload):
     hooks = collection_record.get('kinto-emailer', {}).get('hooks', [])
     messages = []
     for hook in hooks:
+        # Filter out hook if it doesn't meet current event attributes, and keep
+        # if nothing is specified.
         conditions_met = all([field not in hook or field not in payload or
                               hook[field] == payload[field]
                               for field in ('action', 'resource_name', 'id')])
