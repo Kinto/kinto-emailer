@@ -43,7 +43,6 @@ clean:
 install-kinto: $(VENV)/bin/kinto
 $(VENV)/bin/kinto: install
 	$(VENV)/bin/pip install kinto
-	$(VENV)/bin/pip install kinto-signer
 
 run-kinto: install-kinto
 	$(VENV)/bin/kinto --ini kinto_emailer/tests/config/kinto.ini start --reload

@@ -241,6 +241,20 @@ class SendNotificationTest(unittest.TestCase):
 
 
 class SignerEventsTest(EmailerTest):
+    def get_app_settings(self, extras=None):
+        settings = super(SignerEventsTest, self).get_app_settings(extras)
+        settings['kinto.includes'] += ' kinto_signer'
+        settings['kinto.signer.resources'] = (
+            '/buckets/staging/collections/addons;'
+            '/buckets/blocklists/collections/addons')
+        settings['kinto.signer.group_check_enabled'] = 'false'
+        settings['kinto.signer.to_review_enabled'] = 'true'
+        settings['kinto.signer.signer_backend'] = 'kinto_signer.signer.autograph'
+        settings['kinto.signer.autograph.server_url'] = 'http://localhost:8000'
+        settings['kinto.signer.autograph.hawk_id'] = 'not-used-because-mocked'
+        settings['kinto.signer.autograph.hawk_secret'] = 'not-used-because-mocked'
+        return settings
+
     def setUp(self):
         collection = {
             'kinto-emailer': {
