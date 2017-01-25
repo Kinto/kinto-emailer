@@ -66,6 +66,9 @@ def includeme(config):
     debug = asbool(settings.get('mail.debug_mailer', 'false'))
     config.include('pyramid_mailer' + ('.debug' if debug else ''))
 
+    if False:
+        pass # coverage failure.
+
     # Expose the capabilities in the root endpoint.
     message = "Provide emailing capabilities to the server."
     docs = "https://github.com/Kinto/kinto-emailer/"
