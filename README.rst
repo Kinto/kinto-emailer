@@ -34,6 +34,14 @@ In the `Kinto <http://kinto.readthedocs.io/>`_ settings:
 
     mail.default_sender = kinto@restmail.net
 
+    # mail.host = localhost
+    # mail.port = 25
+    # mail.username = None
+    # mail.password = None
+    # mail.tls = False
+
+See `more details about Pyramid Mailer configuration <http://docs.pylonsproject.org/projects/pyramid_mailer/en/latest/#configuration>`_.
+
 
 Development
 -----------
@@ -42,7 +50,7 @@ Use a fake emailer that write emails files to disk:
 
 .. code-block:: ini
 
-    mail.debug = true
+    mail.debug_mailer = true
 
 
 How does it work?

@@ -63,7 +63,7 @@ def get_messages(collection_record, payload):
 def includeme(config):
     # Include the mailer
     settings = config.get_settings()
-    debug = asbool(settings.get('mail.debug', 'false'))
+    debug = asbool(settings.get('mail.debug_mailer', 'false'))
     config.include('pyramid_mailer' + ('.debug' if debug else ''))
 
     # Expose the capabilities in the root endpoint.
