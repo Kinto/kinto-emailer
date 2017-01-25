@@ -1,5 +1,6 @@
 flake8
 kinto-client
+kinto-signer
 mock
 pytest
 pytest-cache

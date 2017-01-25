@@ -7,7 +7,7 @@ import configparser
 
 from kinto import main as kinto_main
 from kinto.core.events import AfterResourceChanged
-from kinto.core.testing import BaseWebTest
+from kinto.core.testing import BaseWebTest, get_user_headers
 from kinto_emailer import get_messages, send_notification
 
 
@@ -34,7 +34,7 @@ COLLECTION_RECORD = {
 }
 
 
-class PluginSetupTest(BaseWebTest, unittest.TestCase):
+class EmailerTest(BaseWebTest, unittest.TestCase):
     entry_point = kinto_main
     api_prefix = "v1"
     config = 'config/kinto.ini'
@@ -48,6 +48,8 @@ class PluginSetupTest(BaseWebTest, unittest.TestCase):
             settings.update(extras)
         return settings
 
+
+class PluginSetupTest(EmailerTest):
     def test_capability_is_exposed(self):
         resp = self.app.get('/')
         capabilities = resp.json['capabilities']
@@ -192,7 +194,6 @@ class GetMessagesTest(unittest.TestCase):
                 }]
             }
         }
-
         payload = {
             'event': 'kinto.core.events.AfterResourceChanged',
             'resource_name': 'record',
@@ -200,6 +201,13 @@ class GetMessagesTest(unittest.TestCase):
         }
         messages = get_messages(collection_record, payload)
         assert len(messages) == 0
+        payload = {
+            'event': 'kinto_signer.events.ReviewRequested',
+            'resource_name': 'record',
+            'action': 'create'
+        }
+        messages = get_messages(collection_record, payload)
+        assert len(messages) == 1
 
 
 class SendNotificationTest(unittest.TestCase):
@@ -229,4 +237,45 @@ class SendNotificationTest(unittest.TestCase):
 
         with mock.patch('kinto_emailer.get_mailer') as get_mailer:
             send_notification(event)
+            assert get_mailer().send.called
+
+
+class SignerEventsTest(EmailerTest):
+    def setUp(self):
+        collection = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'event': 'kinto_signer.events.ReviewRequested',
+                    'template': '{user_id} requested review on {uri}.',
+                    'recipients': ['me@you.com'],
+                }]
+            }
+        }
+        self.headers = dict(self.headers, **get_user_headers('nous'))
+        self.app.put('/buckets/staging', headers=self.headers)
+        self.app.put_json('/buckets/staging/collections/addons',
+                          {'data': collection},
+                          headers=self.headers)
+        self.app.post_json('/buckets/staging/collections/addons/records',
+                           {'data': {'age': 42}},
+                           headers=self.headers)
+        self._patch_autograph()
+
+    def _patch_autograph(self):
+        # Patch calls to Autograph.
+        patch = mock.patch('kinto_signer.signer.autograph.requests')
+        mocked = patch.start()
+        mocked.post.return_value.json.return_value = [{
+            "signature": "",
+            "hash_algorithm": "",
+            "signature_encoding": "",
+            "content-signature": "",
+            "x5u": ""}]
+        return patch
+
+    def test_email_is_when_review_is_requested(self):
+        with mock.patch('kinto_emailer.get_mailer') as get_mailer:
+            self.app.patch_json('/buckets/staging/collections/addons',
+                                {'data': {'status': 'to-review'}},
+                                headers=self.headers)
             assert get_mailer().send.called

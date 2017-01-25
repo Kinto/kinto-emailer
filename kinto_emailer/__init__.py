@@ -74,11 +74,12 @@ def includeme(config):
     # Listen to collection and record change events.
     config.add_subscriber(send_notification, AfterResourceChanged,
                           for_resources=('record', 'collection'))
+    # In case kinto-signer is installed, plug events.
     try:
         from kinto_signer.events import ReviewRequested, ReviewApproved, ReviewRejected
 
         config.add_subscriber(send_notification, ReviewRequested)
         config.add_subscriber(send_notification, ReviewApproved)
         config.add_subscriber(send_notification, ReviewRejected)
-    except ImportError:
+    except ImportError:  # pragma: no cover
         pass
