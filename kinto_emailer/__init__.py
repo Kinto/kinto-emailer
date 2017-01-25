@@ -4,8 +4,18 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
 
+def qualname(obj):
+    """
+    >>> str(msg.__class__)
+    "<class 'pyramid_mailer.message.Message'>"
+    >>> str(msg.__class__).split("'")
+    ['<class ', 'pyramid_mailer.message.Message', '>']
+    """
+    return str(obj.__class__).split("'")[1]
+
+
 def send_notification(event):
-    payload = event.payload
+    payload = dict(event=qualname(event), **event.payload)
     storage = event.request.registry.storage
 
     collection_record = _get_collection_record(storage,
@@ -28,6 +38,7 @@ def _get_collection_record(storage, bucket_id, collection_id):
 
 
 def get_messages(collection_record, payload):
+    filters = ('event', 'action', 'resource_name', 'id')
     hooks = collection_record.get('kinto-emailer', {}).get('hooks', [])
     messages = []
     for hook in hooks:
@@ -35,7 +46,7 @@ def get_messages(collection_record, payload):
         # if nothing is specified.
         conditions_met = all([field not in hook or field not in payload or
                               hook[field] == payload[field]
-                              for field in ('action', 'resource_name', 'id')])
+                              for field in filters])
         if not conditions_met:
             continue
 
@@ -52,7 +63,7 @@ def get_messages(collection_record, payload):
 def includeme(config):
     # Include the mailer
     settings = config.get_settings()
-    debug = asbool(settings.get('mail.debug', 'false'))
+    debug = asbool(settings.get('mail.debug_mailer', 'false'))
     config.include('pyramid_mailer' + ('.debug' if debug else ''))
 
     # Expose the capabilities in the root endpoint.
@@ -63,3 +74,12 @@ def includeme(config):
     # Listen to collection and record change events.
     config.add_subscriber(send_notification, AfterResourceChanged,
                           for_resources=('record', 'collection'))
+    # In case kinto-signer is installed, plug events.
+    try:
+        from kinto_signer.events import ReviewRequested, ReviewApproved, ReviewRejected
+
+        config.add_subscriber(send_notification, ReviewRequested)
+        config.add_subscriber(send_notification, ReviewApproved)
+        config.add_subscriber(send_notification, ReviewRejected)
+    except ImportError:  # pragma: no cover
+        pass

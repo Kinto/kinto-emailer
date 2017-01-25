@@ -44,7 +44,7 @@ install-kinto: $(VENV)/bin/kinto
 $(VENV)/bin/kinto: install
 	$(VENV)/bin/pip install kinto
 
-run-kinto: $(VENV)/bin/kinto
+run-kinto: install-kinto
 	$(VENV)/bin/kinto --ini kinto_emailer/tests/config/kinto.ini start --reload
 
 need-kinto-running:

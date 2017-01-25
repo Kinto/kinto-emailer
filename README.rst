@@ -1,23 +1,94 @@
 Kinto Emailer
 #############
 
-`Kinto <https://kinto.readthedocs.io>`_ is a minimalist storage for your web
-applications. Sometimes, it might be useful to send emails when some events
-arise (e.g. new records have been created). That's where this project can help!
+.. image:: https://img.shields.io/travis/Kinto/kinto-emailer.svg
+        :target: https://travis-ci.org/Kinto/kinto-emailer
 
-Here is how kinto-emailer works
-===============================
+.. image:: https://img.shields.io/pypi/v/kinto-emailer.svg
+        :target: https://pypi.python.org/pypi/kinto-emailer
 
-Attach a template string to your parent collection.
----------------------------------------------------
+.. image:: https://coveralls.io/repos/Kinto/kinto-emailer/badge.svg?branch=master
+        :target: https://coveralls.io/r/Kinto/kinto-emailer
 
-An email template needs to be added under the `email.templates.{action}` key,
-where `{action}` is one of the values defined below.
 
-You can attach these templates to the buckets or the collections, depending on
-your use cases.
+**kinto-emailer**  send emails when some events arise (e.g. new records have
+been created). It relies on `Pyramid Mailer <https://github.com/Pylons/pyramid_mailer/>`_
+for the sending part.
 
-The following examples are defined on buckets:
+
+Install
+=======
+
+::
+
+    pip install kinto-emailer
+
+Setup
+=====
+
+In the `Kinto <http://kinto.readthedocs.io/>`_ settings:
+
+.. code-block:: ini
+
+    kinto.includes = kinto_emailer
+
+    mail.default_sender = kinto@restmail.net
+
+    # mail.host = localhost
+    # mail.port = 25
+    # mail.username = None
+    # mail.password = None
+    # mail.tls = False
+
+See `more details about Pyramid Mailer configuration <http://docs.pylonsproject.org/projects/pyramid_mailer/en/latest/#configuration>`_.
+
+
+Development
+-----------
+
+Use a fake emailer that write emails files to disk:
+
+.. code-block:: ini
+
+    mail.debug_mailer = true
+
+
+How does it work?
+=================
+
+Some information — like monitored action or list of recipients — are defined in
+the collection metadata. When an event occurs, the plugin sends emails if one of
+the expected condition is met.
+
+
+Usage
+=====
+
+The metadata on the collection must look like this:
+
+.. code-block:: js
+
+  {
+    "kinto-emailer": {
+      "hooks": [{
+        "template": "Something happened!",
+        "recipients": ['Security reviewers <security-reviews@mozilla.com>']
+      }]
+    }
+  }
+
+In the above example, every action on the collection metadata or any record in that
+collection will trigger an email notification.
+
+Optional:
+
+* ``sender`` (e.g.``"Kinto team <developers@kinto-storage.org>"``)
+
+
+Selection
+---------
+
+It is possible to define several *hooks*, and filter on some condition. For example:
 
 .. code-block:: js
 
@@ -26,16 +97,60 @@ The following examples are defined on buckets:
       "hooks": [{
         "resource_name": "record",
         "action": "create",
-        "template": "Hi, a new record '{uri}' has just been created in the collection '{bucket_id}/{collection_id}'",
-        "recipients": ['Security reviewers <security-reviews@mozilla.com>'],
-        "sender": "Kinto team <developers@kinto-storage.org>"
+        "template": "Record created!",
+        "recipients": ['Security reviewers <security-reviews@mozilla.com>']
+      }, {
+        "resource_name": "collection",
+        "action": "updated",
+        "template": "Collection updated!",
+        "recipients": ['Security reviewers <security-reviews@mozilla.com>']
       }]
     }
   }
 
-2. Check if templates are defined on new notifications
-------------------------------------------------------
+The possible filters are:
 
-When a new notification is sent by Kinto, *kinto-emailer* checks if
-templates are defined for the action and resource. If one template exists,
-it uses it to send the email to the recipients.
+* ``resource_name``: ``record`` or ``collection`` (default: all)
+* ``action``: ``create``, ``update``, ``delete`` (default: all)
+* ``event``: ``kinto.core.events.AfterResourceChanged`` (default), or
+  ``kinto_signer.events.ReviewRequested``, ``kinto_signer.events.ReviewApproved``,
+  ``kinto_signer.events.ReviewRejected``
+
+
+Template
+--------
+
+The template string can have placeholders:
+
+* ``bucket_id``
+* ``id``: record or collection ``id``)
+* ``user_id``
+* ``resource_name``
+* ``uri``
+* ``action``
+* ``timestamp``
+
+For example:
+
+``{user_id} has {action}d a {resource_name} in {bucket_id}.``
+
+See `Kinto core notifications <http://kinto.readthedocs.io/en/5.3.0/core/notifications.html#payload>`_.
+
+
+Running the tests
+=================
+
+To run the unit tests::
+
+  $ make tests
+
+For the functional tests, run a Kinto instance in a separate terminal:
+
+::
+
+  $ make run-kinto
+
+
+And start the test suite::
+
+  $ make functional
