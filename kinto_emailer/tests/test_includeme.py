@@ -7,7 +7,7 @@ import configparser
 
 from kinto import main as kinto_main
 from kinto.core.events import AfterResourceChanged
-from kinto.core.testing import BaseWebTest, get_user_headers
+from kinto.core.testing import BaseWebTest, get_user_headers, FormattedErrorMixin
 from kinto_emailer import get_messages, send_notification
 
 
@@ -315,7 +315,7 @@ class SignerEventsTest(EmailerTest):
             assert get_mailer().send.called
 
 
-class HookValidationTest(EmailerTest):
+class HookValidationTest(FormattedErrorMixin, EmailerTest):
     def setUp(self):
         self.valid_collection = {
             'kinto-emailer': {
@@ -364,6 +364,15 @@ class HookValidationTest(EmailerTest):
                               headers=self.headers,
                               status=400)
         assert 'Missing "hooks"' in r.json['message']
+
+    def test_validation_errors_are_well_formatted(self):
+        self.valid_collection['kinto-emailer'].pop('hooks')
+        r = self.app.put_json('/buckets/b/collections/c',
+                              {'data': self.valid_collection},
+                              headers=self.headers,
+                              status=400)
+        self.assertFormattedError(r, 400, errno=107, error='Invalid parameters',
+                                  message='Missing "hooks"', info=None)
 
     def test_fails_if_missing_template(self):
         self.valid_collection['kinto-emailer']['hooks'][0].pop('template')
