@@ -52,8 +52,8 @@ class FunctionalTest(unittest.TestCase):
                 'hooks': [{
                     "resource_name": "record",
                     "action": "create",
-                    "subject": "New email",
-                    "template": "New {bucket_id}/{collection_id}/{record_id}.",
+                    "subject": "Action on {root_url}",
+                    "template": "{client_address} edited:\n {bucket_id}/{collection_id}/{record_id}.",
                     "recipients": ['kinto-emailer@restmail.net'],
                 }]
             }
@@ -61,12 +61,13 @@ class FunctionalTest(unittest.TestCase):
 
         record = self.client.create_record({'foo': 'bar'})['data']
 
-        filename = sorted(glob('mail/*.eml'))[0]
+        filename = glob('mail/*.eml')[0]
         with open(filename, 'r') as f:
             body = f.read()
 
         assert 'kinto-emailer@restmail.net' in body
-        assert "New email" in body
+        assert "Action on http://localhost:8888/v1/" in body
+        assert "127.0.0.1=20edited" in body
         assert "emailer/collection1/{}".format(record['id']) in body
 
 

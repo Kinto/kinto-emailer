@@ -141,6 +141,9 @@ The template string can have placeholders:
 * ``uri``
 * ``action``
 * ``timestamp``
+* ``root_url``
+* ``client_address``
+* ``user_agent``
 
 For example:
 
