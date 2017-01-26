@@ -210,6 +210,28 @@ class GetMessagesTest(unittest.TestCase):
         assert len(messages) == 1
 
 
+class GroupExpansionTest(unittest.TestCase):
+
+    def test_recipients_are_expanded_from_group_members(self):
+        storage = mock.MagicMock()
+        collection_record = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'template': 'Poll changed.',
+                    'recipients': ['/buckets/b/groups/g'],
+                }]
+            }
+        }
+        group_record = {
+            'members': ['fxa:225689876', 'portier:devnull@localhost.com']
+        }
+        storage.get.side_effect = [collection_record, group_record]
+        payload = {'bucket_id': 'b', 'collection_id': 'c'}
+        message, = get_messages(storage, payload)
+        assert message.recipients == ['devnull@localhost.com']
+
+
+
 class SendNotificationTest(unittest.TestCase):
     def test_send_notification_does_not_call_the_mailer_if_no_message(self):
         event = mock.MagicMock()
