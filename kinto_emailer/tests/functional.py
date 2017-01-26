@@ -53,7 +53,8 @@ class FunctionalTest(unittest.TestCase):
                     "resource_name": "record",
                     "action": "create",
                     "subject": "Action on {root_url}",
-                    "template": "{client_address} edited:\n {bucket_id}/{collection_id}/{record_id}.",
+                    "template": ("{client_address} edited:\n "
+                                 "{bucket_id}/{collection_id}/{record_id}."),
                     "recipients": ['kinto-emailer@restmail.net'],
                 }]
             }
