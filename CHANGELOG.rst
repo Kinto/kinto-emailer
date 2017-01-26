@@ -9,7 +9,7 @@ This document describes changes between each past release.
 **New features**
 
 - List of recipients can now contain groups URIs. The principals from the specified
-  group that look like email addresses will be used as recipients.
+  group that look like email addresses will be used as recipients (fixes #6)
 
 
 0.1.0 (2017-01-25)
