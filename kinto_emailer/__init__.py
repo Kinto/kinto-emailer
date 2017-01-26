@@ -21,11 +21,18 @@ def qualname(obj):
 
 
 def send_notification(event):
-    payload = dict(event=qualname(event), **event.payload)
-    storage = event.request.registry.storage
+    request = event.request
+    storage = request.registry.storage
+    root_url = request.route_url("hello")
+
+    payload = dict(event=qualname(event),
+                   root_url=root_url,
+                   client_address=request.client_addr,
+                   user_agent=request.user_agent,
+                   **event.payload)
 
     messages = get_messages(storage, payload)
-    mailer = get_mailer(event.request)
+    mailer = get_mailer(request)
     for message in messages:
         mailer.send(message)
 
