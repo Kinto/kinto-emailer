@@ -313,3 +313,110 @@ class SignerEventsTest(EmailerTest):
                                 {'data': {'status': 'to-review'}},
                                 headers=self.headers)
             assert get_mailer().send.called
+
+
+class HookValidationTest(EmailerTest):
+    def setUp(self):
+        self.valid_collection = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'template': '{user_id} requested review on {uri}.',
+                    'recipients': [
+                        'me@you.com',
+                        'My friend alice <alice@wonderland.com>',
+                        '<t.h.i.s+that@some.crazy.moderndomainnameyouknow>'
+                    ]
+                }]
+            }
+        }
+        self.headers = dict(self.headers, **get_user_headers('nous'))
+        self.app.put('/buckets/b', headers=self.headers)
+
+    def test_supports_simple_recipients_list(self):
+        self.app.put_json('/buckets/b/collections/c',
+                          {'data': self.valid_collection},
+                          headers=self.headers)
+
+    def test_supports_groups_url(self):
+        self.valid_collection['kinto-emailer']['hooks'][0]['recipients'] += [
+            '/buckets/b/groups/g'
+        ]
+        self.app.put_json('/buckets/b/collections/c',
+                          {'data': self.valid_collection},
+                          headers=self.headers)
+
+    def test_supports_empty_list_of_hooks(self):
+        self.valid_collection['kinto-emailer']['hooks'] = []
+        self.app.put_json('/buckets/b/collections/c',
+                          {'data': self.valid_collection},
+                          headers=self.headers)
+
+    def test_supports_empty_template(self):
+        self.valid_collection['kinto-emailer']['hooks'][0]['template'] = ''
+        self.app.put_json('/buckets/b/collections/c',
+                          {'data': self.valid_collection},
+                          headers=self.headers)
+
+    def test_fails_with_missing_hooks(self):
+        self.valid_collection['kinto-emailer'].pop('hooks')
+        r = self.app.put_json('/buckets/b/collections/c',
+                              {'data': self.valid_collection},
+                              headers=self.headers,
+                              status=400)
+        assert 'Missing "hooks"' in r.json['message']
+
+    def test_fails_if_missing_template(self):
+        self.valid_collection['kinto-emailer']['hooks'][0].pop('template')
+        r = self.app.put_json('/buckets/b/collections/c',
+                              {'data': self.valid_collection},
+                              headers=self.headers,
+                              status=400)
+        assert 'Missing "template"' in r.json['message']
+
+    def test_fails_with_empty_list_of_recipients(self):
+        self.valid_collection['kinto-emailer']['hooks'][0]['recipients'] = []
+        r = self.app.put_json('/buckets/b/collections/c',
+                              {'data': self.valid_collection},
+                              headers=self.headers,
+                              status=400)
+        assert 'Empty list of recipients' in r.json['message']
+
+    def test_fails_with_invalid_email_recipients(self):
+        self.valid_collection['kinto-emailer']['hooks'][0]['recipients'].extend([
+            '<fe@gmail.com',
+            'haha@haha@com'
+        ])
+        r = self.app.put_json('/buckets/b/collections/c',
+                              {'data': self.valid_collection},
+                              headers=self.headers,
+                              status=400)
+        assert 'Invalid recipients <fe@gmail.com, haha@haha@com' in r.json['message']
+
+    def test_fails_if_group_is_from_other_bucket(self):
+        self.valid_collection['kinto-emailer']['hooks'][0]['recipients'] += [
+            '/buckets/plop/groups/g'
+        ]
+        r = self.app.put_json('/buckets/b/collections/c',
+                              {'data': self.valid_collection},
+                              headers=self.headers,
+                              status=400)
+        assert 'Invalid bucket for groups /buckets/plop/groups/g' in r.json['message']
+
+    def test_fails_if_group_uri_is_invalid(self):
+        self.valid_collection['kinto-emailer']['hooks'][0]['recipients'] += [
+            '/buckets/b/group/g'   # /groups/g!
+        ]
+        r = self.app.put_json('/buckets/b/collections/c',
+                              {'data': self.valid_collection},
+                              headers=self.headers,
+                              status=400)
+        assert 'Invalid recipients /buckets/b/group/g' in r.json['message']
+
+    def test_fails_if_template_contains_bad_placeholders(self):
+        tpl = 'The current temperature is {degres}C.'
+        self.valid_collection['kinto-emailer']['hooks'][0]['template'] = tpl
+        r = self.app.put_json('/buckets/b/collections/c',
+                              {'data': self.valid_collection},
+                              headers=self.headers,
+                              status=400)
+        assert 'degres' in r.json['message']
