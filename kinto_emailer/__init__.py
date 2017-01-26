@@ -24,7 +24,7 @@ def send_notification(event):
     payload = dict(event=qualname(event), **event.payload)
     storage = event.request.registry.storage
 
-    messages = get_messages(storage, collection_record, payload)
+    messages = get_messages(storage, payload)
     mailer = get_mailer(event.request)
     for message in messages:
         mailer.send(message)

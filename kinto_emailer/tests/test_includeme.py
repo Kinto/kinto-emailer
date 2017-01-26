@@ -79,9 +79,18 @@ class PluginSetupTest(EmailerTest):
 
 
 class GetMessagesTest(unittest.TestCase):
+    def setUp(self):
+        self.storage = mock.MagicMock()
+        self.storage.get.return_value = COLLECTION_RECORD
+        self.payload = {
+            'bucket_id': 'b',
+            'collection_id': 'c',
+            'resource_name': 'record',
+            'action': 'update'
+        }
+
     def test_get_messages_returns_configured_messages_for_records(self):
-        payload = {'resource_name': 'record', 'action': 'update'}
-        message, = get_messages(COLLECTION_RECORD, payload)
+        message, = get_messages(self.storage, self.payload)
 
         assert message.subject == 'Record update'
         assert message.sender == 'kinto@restmail.net'
@@ -89,8 +98,8 @@ class GetMessagesTest(unittest.TestCase):
         assert message.body == 'Bonjour les amis.'
 
     def test_get_messages_returns_a_configured_message_for_collection_update(self):
-        payload = {'resource_name': 'collection', 'action': 'update'}
-        message, = get_messages(COLLECTION_RECORD, payload)
+        self.payload.update({'resource_name': 'collection'})
+        message, = get_messages(self.storage, self.payload)
 
         assert message.subject == 'Collection update'
         assert message.sender == 'kinto@restmail.net'
@@ -98,12 +107,12 @@ class GetMessagesTest(unittest.TestCase):
         assert message.body == 'Bonjour les amis on collection update.'
 
     def test_get_emailer_info_returns_empty_list_if_emailer_not_configured(self):
-        payload = {'resource_name': 'record', 'action': 'update'}
-        messages = get_messages({}, payload)
+        self.storage.get.return_value = {}
+        messages = get_messages(self.storage, self.payload)
         assert len(messages) == 0
 
     def test_get_messages_returns_default_subject_to_new_message(self):
-        collection_record = {
+        self.storage.get.return_value = {
             'kinto-emailer': {
                 'hooks': [{
                     'template': 'Bonjour les amis.',
@@ -111,13 +120,12 @@ class GetMessagesTest(unittest.TestCase):
                 }]
             }
         }
-        payload = {'resource_name': 'record', 'action': 'update'}
-        message, = get_messages(collection_record, payload)
+        message, = get_messages(self.storage, self.payload)
 
         assert message.subject == 'New message'
 
     def test_get_messages_returns_several_messages_if_hooks_match(self):
-        collection_record = {
+        self.storage.get.return_value = {
             'kinto-emailer': {
                 'hooks': [{
                     'template': 'Bonjour les amis.',
@@ -128,13 +136,12 @@ class GetMessagesTest(unittest.TestCase):
                 }]
             }
         }
-        payload = {'resource_name': 'record', 'action': 'update'}
-        messages = get_messages(collection_record, payload)
+        messages = get_messages(self.storage, self.payload)
 
         assert len(messages) == 2
 
     def test_get_messages_can_filter_by_id(self):
-        collection_record = {
+        self.storage.get.return_value = {
             'kinto-emailer': {
                 'hooks': [{
                     'id': 'poll',
@@ -143,13 +150,13 @@ class GetMessagesTest(unittest.TestCase):
                 }]
             }
         }
-        payload = {'resource_name': 'record', 'action': 'update', 'id': 'abc'}
-        messages = get_messages(collection_record, payload)
+        self.payload.update({'id': 'abc'})
+        messages = get_messages(self.storage, self.payload)
 
         assert len(messages) == 0
 
     def test_get_messages_ignores_resource_if_not_specified(self):
-        collection_record = {
+        self.storage.get.return_value = {
             'kinto-emailer': {
                 'hooks': [{
                     'template': 'Poll changed.',
@@ -158,16 +165,15 @@ class GetMessagesTest(unittest.TestCase):
             }
         }
 
-        payload = {'resource_name': 'record', 'action': 'update'}
-        messages = get_messages(collection_record, payload)
+        messages = get_messages(self.storage, self.payload)
         assert len(messages) == 1
 
-        payload = {'resource_name': 'collection', 'action': 'update'}
-        messages = get_messages(collection_record, payload)
+        self.payload.update({'resource_name': 'collection'})
+        messages = get_messages(self.storage, self.payload)
         assert len(messages) == 1
 
     def test_get_messages_ignores_action_if_not_specified(self):
-        collection_record = {
+        self.storage.get.return_value = {
             'kinto-emailer': {
                 'hooks': [{
                     'template': 'Poll changed.',
@@ -176,16 +182,16 @@ class GetMessagesTest(unittest.TestCase):
             }
         }
 
-        payload = {'resource_name': 'record', 'action': 'create'}
-        messages = get_messages(collection_record, payload)
+        self.payload.update({'action': 'create'})
+        messages = get_messages(self.storage, self.payload)
         assert len(messages) == 1
 
-        payload = {'resource_name': 'record', 'action': 'update'}
-        messages = get_messages(collection_record, payload)
+        self.payload.update({'action': 'update'})
+        messages = get_messages(self.storage, self.payload)
         assert len(messages) == 1
 
     def test_get_messages_can_filter_by_event_class(self):
-        collection_record = {
+        self.storage.get.return_value = {
             'kinto-emailer': {
                 'hooks': [{
                     'event': 'kinto_signer.events.ReviewRequested',
@@ -194,19 +200,12 @@ class GetMessagesTest(unittest.TestCase):
                 }]
             }
         }
-        payload = {
-            'event': 'kinto.core.events.AfterResourceChanged',
-            'resource_name': 'record',
-            'action': 'create'
-        }
-        messages = get_messages(collection_record, payload)
+        self.payload.update({'event': 'kinto.core.events.AfterResourceChanged'})
+        messages = get_messages(self.storage, self.payload)
         assert len(messages) == 0
-        payload = {
-            'event': 'kinto_signer.events.ReviewRequested',
-            'resource_name': 'record',
-            'action': 'create'
-        }
-        messages = get_messages(collection_record, payload)
+
+        self.payload.update({'event': 'kinto_signer.events.ReviewRequested'})
+        messages = get_messages(self.storage, self.payload)
         assert len(messages) == 1
 
 
