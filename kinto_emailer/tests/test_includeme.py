@@ -230,7 +230,6 @@ class GroupExpansionTest(unittest.TestCase):
         assert message.recipients == ['devnull@localhost.com']
 
 
-
 class SendNotificationTest(unittest.TestCase):
     def test_send_notification_does_not_call_the_mailer_if_no_message(self):
         event = mock.MagicMock()
