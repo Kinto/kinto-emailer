@@ -85,6 +85,18 @@ Optional:
 * ``sender`` (e.g.``"Kinto team <developers@kinto-storage.org>"``)
 
 
+Recipients
+----------
+
+The list of recipients can either contain:
+
+* Email adresses (eg. ``alice@wonderland.com`` or ``"Joe Doe <jon@doe.com>"``)
+* Group URI (eg. ``/buckets/staging/groups/reviewers``)
+
+With group URIs, the email recipients will be expanded with the group members
+principals look like email addresses (eg. ``ldap:peace@world.org``).
+
+
 Selection
 ---------
 
@@ -103,7 +115,7 @@ It is possible to define several *hooks*, and filter on some condition. For exam
         "resource_name": "collection",
         "action": "updated",
         "template": "Collection updated!",
-        "recipients": ['Security reviewers <security-reviews@mozilla.com>']
+        "recipients": ["Security reviewers <security-reviews@mozilla.com>"]
       }]
     }
   }

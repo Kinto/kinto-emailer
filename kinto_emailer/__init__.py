@@ -41,7 +41,7 @@ def _get_collection_record(storage, bucket_id, collection_id):
 
 
 def _expand_recipients(storage, recipients):
-    emails = [r for r in recipients if EMAIL_REGEXP.match(r)]
+    emails = [r for r in recipients if not GROUP_REGEXP.match(r)]
     groups = [r for r in recipients if GROUP_REGEXP.match(r)]
     for group_uri in groups:
         bucket_uri, group_id = group_uri.split('/groups/')
