@@ -37,11 +37,15 @@ def context_from_event(event):
 
 
 def send_notification(event):
+    settings = event.request.registry.settings
     storage = event.request.registry.storage
     messages = get_messages(storage, context_from_event(event))
     mailer = get_mailer(event.request)
     for message in messages:
-        mailer.send(message)
+        if settings.get('mail.queue_path') is None:
+            mailer.send(message)
+        else:
+            mailer.send_to_queue(message)
 
 
 def _get_collection_record(storage, bucket_id, collection_id):

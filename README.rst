@@ -39,6 +39,9 @@ In the `Kinto <http://kinto.readthedocs.io/>`_ settings:
     # mail.username = None
     # mail.password = None
     # mail.tls = False
+    # mail.queue_path = None
+
+If ``mail.queue_path`` is set, the emails are storage in a local Maildir queue.
 
 See `more details about Pyramid Mailer configuration <http://docs.pylonsproject.org/projects/pyramid_mailer/en/latest/#configuration>`_.
 
