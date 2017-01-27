@@ -68,21 +68,21 @@ The metadata on the collection must look like this:
 
 .. code-block:: js
 
-  {
-    "kinto-emailer": {
-      "hooks": [{
-        "template": "Something happened!",
-        "recipients": ['Security reviewers <security-reviews@mozilla.com>']
-      }]
+    {
+      "kinto-emailer": {
+        "hooks": [{
+          "template": "Something happened!",
+          "recipients": ['Security reviewers <security-reviews@mozilla.com>']
+        }]
+      }
     }
-  }
 
 In the above example, every action on the collection metadata or any record in that
 collection will trigger an email notification.
 
 Optional:
 
-* ``sender`` (e.g.``"Kinto team <developers@kinto-storage.org>"``)
+* ``sender`` (e.g. ``"Kinto team <developers@kinto-storage.org>"``)
 
 
 Recipients
@@ -159,9 +159,7 @@ To run the unit tests::
 
   $ make tests
 
-For the functional tests, run a Kinto instance in a separate terminal:
-
-::
+For the functional tests, run a Kinto instance in a separate terminal::
 
   $ make run-kinto
 
