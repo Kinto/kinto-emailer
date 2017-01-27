@@ -300,10 +300,26 @@ class SendNotificationTest(unittest.TestCase):
             'collection_id': 'foobar'
         }
         event.request.registry.storage.get.return_value = COLLECTION_RECORD
+        event.request.registry.settings = {}
 
         with mock.patch('kinto_emailer.get_mailer') as get_mailer:
             send_notification(event)
             assert get_mailer().send.called
+
+    def test_send_notification_calls_the_mailer_queue_if_configured(self):
+        event = mock.MagicMock()
+        event.payload = {
+            'resource_name': 'record',
+            'action': 'update',
+            'bucket_id': 'default',
+            'collection_id': 'foobar'
+        }
+        event.request.registry.storage.get.return_value = COLLECTION_RECORD
+        event.request.registry.settings = {'mail.queue_path': '/var/mail'}
+
+        with mock.patch('kinto_emailer.get_mailer') as get_mailer:
+            send_notification(event)
+            assert get_mailer().send_to_queue.called
 
 
 class SignerEventsTest(EmailerTest):
