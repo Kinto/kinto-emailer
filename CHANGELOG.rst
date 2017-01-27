@@ -6,7 +6,9 @@ This document describes changes between each past release.
 0.3.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+**New features**
+
+- Support configuration from bucket metadata (fixes #27)
 
 
 0.2.0 (2017-01-27)

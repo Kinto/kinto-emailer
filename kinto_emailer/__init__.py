@@ -44,19 +44,27 @@ def send_notification(event):
         mailer.send(message)
 
 
-def _get_collection_record(storage, bucket_id, collection_id):
-    parent_id = '/buckets/%s' % bucket_id
-    record_type = 'collection'
+def _get_emailer_hooks(storage, context):
+    bucket_id = context['bucket_id']
+    collection_id = context['collection_id']
+    bucket_uri = '/buckets/%s' % bucket_id
+    # Look-up collection metadata.
+    metadata = storage.get(parent_id=bucket_uri,
+                           collection_id='collection',
+                           object_id=collection_id)
+    if 'kinto-emailer' not in metadata:
+        # Try in bucket metadata.
+        metadata = storage.get(parent_id='',
+                               collection_id='bucket',
+                               object_id=bucket_id)
+    # Returns empty list of hooks.
+    return metadata.get('kinto-emailer', {}).get('hooks', [])
 
-    return storage.get(
-        parent_id=parent_id,
-        collection_id=record_type,
-        object_id=collection_id)
 
-
-def _expand_recipients(storage, recipients):
+def _expand_recipients(storage, recipients, context):
     emails = [r for r in recipients if not GROUP_REGEXP.match(r)]
-    groups = [r for r in recipients if GROUP_REGEXP.match(r)]
+    groups = [r.format(**context) for r in recipients
+              if GROUP_REGEXP.match(r.format(**context))]
     for group_uri in groups:
         bucket_uri, group_id = group_uri.split('/groups/')
         try:
@@ -73,25 +81,26 @@ def _expand_recipients(storage, recipients):
     return emails
 
 
-def get_messages(storage, payload):
-    collection_record = _get_collection_record(storage,
-                                               payload['bucket_id'],
-                                               payload['collection_id'])
-    filters = ('event', 'action', 'resource_name', 'id')
-    hooks = collection_record.get('kinto-emailer', {}).get('hooks', [])
+def get_messages(storage, context):
+    hooks = _get_emailer_hooks(storage, context)
+    filters = ('event', 'action', 'resource_name',
+               'id', 'record_id', 'collection_id')
     messages = []
     for hook in hooks:
         # Filter out hook if it doesn't meet current event attributes, and keep
         # if nothing is specified.
-        conditions_met = all([field not in hook or field not in payload or
-                              hook[field] == payload[field]
+        conditions_met = all([field not in hook or field not in context or
+                              hook[field] == context[field]
                               for field in filters])
         if not conditions_met:
             continue
 
-        msg = hook['template'].format(**payload)
-        subject = hook.get('subject', 'New message').format(**payload)
-        recipients = _expand_recipients(storage, hook['recipients'])
+        msg = hook['template'].format(**context)
+        subject = hook.get('subject', 'New message').format(**context)
+        recipients = _expand_recipients(storage, hook['recipients'], context)
+
+        if not recipients:
+            continue
 
         messages.append(Message(subject=subject,
                                 sender=hook.get('sender'),
@@ -105,11 +114,11 @@ def _validate_emailer_settings(event):
     bucket_uri = '/buckets/{bucket_id}'.format(**event.payload)
 
     for impacted in event.impacted_records:
-        collection_record = impacted['new']
-        if 'kinto-emailer' not in collection_record:
+        metadata = impacted['new']
+        if 'kinto-emailer' not in metadata:
             continue
         try:
-            hooks = collection_record['kinto-emailer']['hooks']
+            hooks = metadata['kinto-emailer']['hooks']
         except KeyError:
             raise_invalid(request, description='Missing "hooks".')
 
@@ -157,7 +166,7 @@ def includeme(config):
 
     # Listen to collection modification before commit for validation.
     config.add_subscriber(_validate_emailer_settings, ResourceChanged,
-                          for_resources=('collection',),
+                          for_resources=('bucket', 'collection',),
                           for_actions=('create', 'update'))
 
     # Listen to collection and record change events.

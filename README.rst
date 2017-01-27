@@ -57,14 +57,14 @@ How does it work?
 =================
 
 Some information — like monitored action or list of recipients — are defined in
-the collection metadata. When an event occurs, the plugin sends emails if one of
+the collection or the bucket metadata. When an event occurs, the plugin sends emails if one of
 the expected condition is met.
 
 
 Usage
 =====
 
-The metadata on the collection must look like this:
+The metadata on the collection (or the bucket) must look like this:
 
 .. code-block:: js
 
@@ -80,8 +80,11 @@ The metadata on the collection must look like this:
 In the above example, every action on the collection metadata or any record in that
 collection will trigger an email notification.
 
+The metadata of the collection override the bucket metadata, they are not merged.
+
 Optional:
 
+* ``subject`` (e.g. ``"An action was performed"``)
 * ``sender`` (e.g. ``"Kinto team <developers@kinto-storage.org>"``)
 
 
@@ -124,6 +127,8 @@ The possible filters are:
 
 * ``resource_name``: ``record`` or ``collection`` (default: all)
 * ``action``: ``create``, ``update``, ``delete`` (default: all)
+* ``collection_id`` (default: all)
+* ``record_id`` (default: all)
 * ``event``: ``kinto.core.events.AfterResourceChanged`` (default), or
   ``kinto_signer.events.ReviewRequested``, ``kinto_signer.events.ReviewApproved``,
   ``kinto_signer.events.ReviewRejected``
