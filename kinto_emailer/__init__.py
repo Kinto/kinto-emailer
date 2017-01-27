@@ -1,12 +1,14 @@
 import re
 
-from kinto.core.events import AfterResourceChanged
+from kinto.core.events import AfterResourceChanged, ResourceChanged
+from kinto.core.errors import raise_invalid
+from kinto.core.storage import exceptions as storage_exceptions
 from pyramid.settings import asbool
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
 
-EMAIL_REGEXP = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+EMAIL_REGEXP = re.compile(r"^(.*<[^@<>\s]+@[^@<>\s]+>)|([^@<>\s]+@[^@<>\s]+)$")
 GROUP_REGEXP = re.compile(r"^/buckets/[^/]+/groups/[^/]+$")
 
 
@@ -20,19 +22,24 @@ def qualname(obj):
     return str(obj.__class__).split("'")[1]
 
 
-def send_notification(event):
-    request = event.request
-    storage = request.registry.storage
-    root_url = request.route_url("hello")
-
-    payload = dict(event=qualname(event),
+def context_from_event(event):
+    root_url = event.request.route_url("hello")
+    context = dict(event=qualname(event),
                    root_url=root_url,
-                   client_address=request.client_addr,
-                   user_agent=request.user_agent,
+                   client_address=event.request.client_addr,
+                   user_agent=event.request.user_agent,
                    **event.payload)
+    # The following payload attributes are not always present.
+    # See Kinto/kinto#945
+    context.setdefault('record_id', '{record_id}')
+    context.setdefault('collection_id', '{collection_id}')
+    return context
 
-    messages = get_messages(storage, payload)
-    mailer = get_mailer(request)
+
+def send_notification(event):
+    storage = event.request.registry.storage
+    messages = get_messages(storage, context_from_event(event))
+    mailer = get_mailer(event.request)
     for message in messages:
         mailer.send(message)
 
@@ -52,9 +59,12 @@ def _expand_recipients(storage, recipients):
     groups = [r for r in recipients if GROUP_REGEXP.match(r)]
     for group_uri in groups:
         bucket_uri, group_id = group_uri.split('/groups/')
-        group = storage.get(parent_id=bucket_uri,
-                            collection_id='group',
-                            object_id=group_id)
+        try:
+            group = storage.get(parent_id=bucket_uri,
+                                collection_id='group',
+                                object_id=group_id)
+        except storage_exceptions.RecordNotFoundError:
+            continue
         # Take out prefix from user ids (e.g. "ldap:mathieu@mozilla.com")
         unprefixed_members = [m.split(':', 1)[-1] for m in group['members']]
         # Keep only group members that are email addresses.
@@ -90,6 +100,50 @@ def get_messages(storage, payload):
     return messages
 
 
+def _validate_emailer_settings(event):
+    request = event.request
+    bucket_uri = '/buckets/{bucket_id}'.format(**event.payload)
+
+    for impacted in event.impacted_records:
+        collection_record = impacted['new']
+        if 'kinto-emailer' not in collection_record:
+            continue
+        try:
+            hooks = collection_record['kinto-emailer']['hooks']
+        except KeyError:
+            raise_invalid(request, description='Missing "hooks".')
+
+        for hook in hooks:
+            try:
+                template = hook['template']
+            except KeyError:
+                raise_invalid(request, description='Missing "template".')
+
+            try:
+                context = context_from_event(event)
+                template.format(**context)
+            except KeyError as e:
+                error_msg = 'Invalid template variable: %s' % e
+                raise_invalid(request, description=error_msg)
+
+            recipients = hook.get('recipients', [])
+            if not recipients:
+                raise_invalid(request, description='Empty list of recipients.')
+
+            invalids = [r for r in recipients
+                        if not (EMAIL_REGEXP.match(r) or GROUP_REGEXP.match(r))]
+            if invalids:
+                error_msg = 'Invalid recipients %s' % ', '.join(invalids)
+                raise_invalid(request, description=error_msg)
+
+            invalid_groups = [r for r in recipients
+                              if GROUP_REGEXP.match(r) and
+                              not r.startswith(bucket_uri)]
+            if invalid_groups:
+                error_msg = 'Invalid bucket for groups %s' % ', '.join(invalid_groups)
+                raise_invalid(request, description=error_msg)
+
+
 def includeme(config):
     # Include the mailer
     settings = config.get_settings()
@@ -100,6 +154,11 @@ def includeme(config):
     message = "Provide emailing capabilities to the server."
     docs = "https://github.com/Kinto/kinto-emailer/"
     config.add_api_capability("emailer", message, docs)
+
+    # Listen to collection modification before commit for validation.
+    config.add_subscriber(_validate_emailer_settings, ResourceChanged,
+                          for_resources=('collection',),
+                          for_actions=('create', 'update'))
 
     # Listen to collection and record change events.
     config.add_subscriber(send_notification, AfterResourceChanged,
