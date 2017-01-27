@@ -293,6 +293,7 @@ class SendNotificationTest(unittest.TestCase):
 
     def test_send_notification_calls_the_mailer_if_match_event(self):
         event = mock.MagicMock()
+        event.impacted_records = [{'new': {'id': 'a'}}]
         event.payload = {
             'resource_name': 'record',
             'action': 'update',
@@ -308,6 +309,7 @@ class SendNotificationTest(unittest.TestCase):
 
     def test_send_notification_calls_the_mailer_queue_if_configured(self):
         event = mock.MagicMock()
+        event.impacted_records = [{'new': {'id': 'a'}}]
         event.payload = {
             'resource_name': 'record',
             'action': 'update',
@@ -375,6 +377,40 @@ class SignerEventsTest(EmailerTest):
                                 {'data': {'status': 'to-review'}},
                                 headers=self.headers)
             assert get_mailer().send.called
+
+
+class BatchRequestTest(EmailerTest):
+    def setUp(self):
+        bucket = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'action': 'create',
+                    'resource_name': 'collection',
+                    'subject': 'Created {bucket_id}/{collection_id}.',
+                    'template': '',
+                    'recipients': ['me@you.com'],
+                }]
+            }
+        }
+        self.headers = dict(self.headers, **get_user_headers('nous'))
+        self.app.put_json('/buckets/b', {'data': bucket}, headers=self.headers)
+
+        patch = mock.patch('kinto_emailer.get_mailer')
+        self.get_mailer = patch.start()
+        self.addCleanup(patch.stop)
+
+    def test_emails_are_generated_for_each_batch_subrequest(self):
+        requests = {
+            'defaults': {'method': 'POST', 'path': '/buckets/b/collections'},
+            'requests': [
+                {'body': {'data': {'id': '1'}}},
+                {'body': {'data': {'id': '2'}}}
+            ]
+        }
+        self.app.post_json('/batch', requests, headers=self.headers)
+        call1, call2 = self.get_mailer().send.call_args_list
+        assert call1[0][0].subject == "Created b/1."
+        assert call2[0][0].subject == "Created b/2."
 
 
 class HookValidationTest(FormattedErrorMixin, EmailerTest):

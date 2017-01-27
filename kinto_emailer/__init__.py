@@ -39,7 +39,20 @@ def context_from_event(event):
 def send_notification(event):
     settings = event.request.registry.settings
     storage = event.request.registry.storage
-    messages = get_messages(storage, context_from_event(event))
+    resource_name = event.payload['resource_name']
+    context = context_from_event(event)
+
+    # Build every email for every impacted objects.
+    messages = []
+    for impacted in event.impacted_records:
+        # Maybe context reliable on batch requests.
+        # See Kinto/kinto#945
+        _context = context.copy()
+        object_id = impacted.get('new', impacted.get('old'))['id']
+        _context[resource_name + '_id'] = _context['id'] = object_id
+
+        messages += get_messages(storage, _context)
+
     mailer = get_mailer(event.request)
     for message in messages:
         if settings.get('mail.queue_path') is None:
