@@ -22,7 +22,7 @@ REQUIREMENTS = [
 ]
 
 setup(name='kinto-emailer',
-      version='0.3.0',
+      version='0.4.0.dev0',
       description='Kinto emailer plugin',
       long_description=README + "\n\n" + CHANGELOG + "\n\n" + CONTRIBUTORS,
       license='Apache License (2.0)',
