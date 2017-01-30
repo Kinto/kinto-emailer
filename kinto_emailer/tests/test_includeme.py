@@ -209,11 +209,30 @@ class GetMessagesTest(unittest.TestCase):
         assert len(messages) == 1
 
 
+class BucketTest(unittest.TestCase):
+
+    def test_hooks_can_be_defined_on_buckets(self):
+        storage = mock.MagicMock()
+        collection_metadata = {}
+        bucket_metadata = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'template': 'Poll changed.',
+                    'recipients': ['from@bucket.com'],
+                }]
+            }
+        }
+        storage.get.side_effect = [collection_metadata, bucket_metadata]
+        payload = {'bucket_id': 'b', 'collection_id': 'c'}
+        message, = get_messages(storage, payload)
+        assert message.recipients == ['from@bucket.com']
+
+
 class GroupExpansionTest(unittest.TestCase):
 
-    def test_recipients_are_expanded_from_group_members(self):
-        storage = mock.MagicMock()
-        collection_record = {
+    def setUp(self):
+        self.storage = mock.MagicMock()
+        self.collection_record = {
             'kinto-emailer': {
                 'hooks': [{
                     'template': 'Poll changed.',
@@ -221,13 +240,40 @@ class GroupExpansionTest(unittest.TestCase):
                 }]
             }
         }
-        group_record = {
+        self.group_record = {
             'members': ['fxa:225689876', 'portier:devnull@localhost.com']
         }
-        storage.get.side_effect = [collection_record, group_record]
+        self.storage.get.side_effect = [self.collection_record, self.group_record]
+
+    def test_recipients_are_expanded_from_group_members(self):
         payload = {'bucket_id': 'b', 'collection_id': 'c'}
-        message, = get_messages(storage, payload)
+        message, = get_messages(self.storage, payload)
         assert message.recipients == ['devnull@localhost.com']
+
+    def test_no_message_no_email_in_group_members(self):
+        group_record = {
+            'members': ['fxa:225689876', 'basicauth:toto-la-mamposina']
+        }
+        self.storage.get.side_effect = [self.collection_record, group_record]
+        payload = {'bucket_id': 'b', 'collection_id': 'c'}
+        messages = get_messages(self.storage, payload)
+        assert not messages
+
+    def test_email_group_can_contain_placeholders(self):
+        collection_record = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'template': 'Poll changed.',
+                    'recipients': ['/buckets/b/groups/{collection_id}'],
+                }]
+            }
+        }
+        self.storage.get.side_effect = [collection_record, self.group_record]
+        payload = {'bucket_id': 'b', 'collection_id': 'c'}
+        get_messages(self.storage, payload)
+        self.storage.get.assert_called_with(parent_id='/buckets/b',
+                                            collection_id='group',
+                                            object_id='c')
 
 
 class SendNotificationTest(unittest.TestCase):
