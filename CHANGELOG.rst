@@ -11,6 +11,10 @@ This document describes changes between each past release.
 - Support configuration from bucket metadata (fixes #27)
 - Send mail to local Maildir queue if ``mail.queue_path`` setting is defined (ref #3)
 
+**Bug fixes**
+
+- Fix support of batch requests (fixes #24)
+
 
 0.2.0 (2017-01-27)
 ------------------
