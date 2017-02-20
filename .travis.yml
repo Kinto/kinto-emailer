@@ -3,7 +3,6 @@ python: 2.7
 env:
     - TOX_ENV=py27
     - TOX_ENV=py34
-    - TOX_ENV=kinto-master
     - TOX_ENV=flake8
 install:
     - pip install tox
@@ -11,7 +10,8 @@ script:
     - tox -e $TOX_ENV
 matrix:
   include:
-    - env:
+    - python: 3.5
+      env:
         - TOX_ENV=functional
           WITH=kinto-master
       install:
@@ -19,7 +19,8 @@ matrix:
         - make install-kinto
         - pip install -U https://github.com/Kinto/kinto/tarball/master
         - make run-kinto &
-    - env:
+    - python: 3.5
+      env:
         - TOX_ENV=functional
       install:
         - pip install tox
@@ -28,6 +29,7 @@ matrix:
     - python: 3.5
       env:
         - TOX_ENV=py35
+        - TOX_ENV=kinto-master
 after_success:
   # Report coverage results to coveralls.io
   - pip install coveralls
