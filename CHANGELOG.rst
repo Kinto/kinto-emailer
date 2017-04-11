@@ -6,7 +6,9 @@ This document describes changes between each past release.
 0.4.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+**New features**
+
+- Add a ``validate_setup.py`` script to check that server can actually send emails
 
 
 0.3.0 (2017-01-30)
