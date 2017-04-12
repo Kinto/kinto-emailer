@@ -6,6 +6,7 @@ import configparser
 
 
 from kinto import main as kinto_main
+from kinto.core import errors
 from kinto.core.events import AfterResourceChanged
 from kinto.core.testing import BaseWebTest, get_user_headers, FormattedErrorMixin
 from kinto_emailer import get_messages, send_notification
@@ -471,7 +472,9 @@ class HookValidationTest(FormattedErrorMixin, EmailerTest):
                               {'data': self.valid_collection},
                               headers=self.headers,
                               status=400)
-        self.assertFormattedError(r, 400, errno=107, error='Invalid parameters',
+        self.assertFormattedError(r, 400,
+                                  errno=errors.ERRORS.INVALID_PARAMETERS,
+                                  error='Invalid parameters',
                                   message='Missing "hooks"', info=None)
 
     def test_fails_if_missing_template(self):
