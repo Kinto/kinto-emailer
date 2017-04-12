@@ -10,6 +10,9 @@ This document describes changes between each past release.
 
 - Add a ``validate_setup.py`` script to check that server can actually send emails
 
+**Bug fixes**
+
+- Fix sending notifications by decoupling it from transactions (fixes #38)
 
 0.3.0 (2017-01-30)
 ------------------

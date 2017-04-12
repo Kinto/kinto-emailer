@@ -291,7 +291,7 @@ class SendNotificationTest(unittest.TestCase):
 
         with mock.patch('kinto_emailer.get_mailer') as get_mailer:
             send_notification(event)
-            assert not get_mailer().send.called
+            assert not get_mailer().send_immediately.called
 
     def test_send_notification_calls_the_mailer_if_match_event(self):
         event = mock.MagicMock()
@@ -307,7 +307,7 @@ class SendNotificationTest(unittest.TestCase):
 
         with mock.patch('kinto_emailer.get_mailer') as get_mailer:
             send_notification(event)
-            assert get_mailer().send.called
+            assert get_mailer().send_immediately.called
 
     def test_send_notification_calls_the_mailer_queue_if_configured(self):
         event = mock.MagicMock()
@@ -379,7 +379,7 @@ class SignerEventsTest(EmailerTest):
             self.app.patch_json('/buckets/staging/collections/addons',
                                 {'data': {'status': 'to-review'}},
                                 headers=self.headers)
-            assert get_mailer().send.called
+            assert get_mailer().send_immediately.called
 
 
 class BatchRequestTest(EmailerTest):
@@ -411,7 +411,7 @@ class BatchRequestTest(EmailerTest):
             ]
         }
         self.app.post_json('/batch', requests, headers=self.headers)
-        call1, call2 = self.get_mailer().send.call_args_list
+        call1, call2 = self.get_mailer().send_immediately.call_args_list
         assert call1[0][0].subject == "Created b/1."
         assert call2[0][0].subject == "Created b/2."
 

@@ -1,4 +1,5 @@
 import re
+import logging
 
 from kinto.core.events import AfterResourceChanged, ResourceChanged
 from kinto.core.errors import raise_invalid
@@ -6,6 +7,9 @@ from kinto.core.storage import exceptions as storage_exceptions
 from pyramid.settings import asbool
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
+
+
+logger = logging.getLogger(__name__)
 
 
 EMAIL_REGEXP = re.compile(r"^(.*<[^@<>\s]+@[^@<>\s]+>)|([^@<>\s]+@[^@<>\s]+)$")
@@ -54,11 +58,14 @@ def send_notification(event):
         messages += get_messages(storage, _context)
 
     mailer = get_mailer(event.request)
-    for message in messages:
-        if settings.get('mail.queue_path') is None:
-            mailer.send(message)
-        else:
-            mailer.send_to_queue(message)
+    try:
+        for message in messages:
+            if settings.get('mail.queue_path') is None:
+                mailer.send_immediately(message, fail_silently=False)
+            else:
+                mailer.send_to_queue(message)
+    except:
+        logger.exception("Could not send notifications")
 
 
 def _get_emailer_hooks(storage, context):
