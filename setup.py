@@ -22,7 +22,7 @@ REQUIREMENTS = [
 
 ENTRY_POINTS = {
     'console_scripts': [
-        'kinto-send-email = kinto_emailer.send_email:main'
+        'kinto-send-email = kinto_emailer.command_send:main'
     ],
 }
 
