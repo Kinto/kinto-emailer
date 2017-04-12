@@ -17,6 +17,7 @@ matrix:
         - pip install tox
         - make install-kinto
         - pip install -U https://github.com/Kinto/kinto/tarball/master
+        - mv kinto_emailer/tests/config/kinto-7.X.ini kinto_emailer/tests/config/kinto.ini
         - make run-kinto &
     - env:
         - TOX_ENV=functional
