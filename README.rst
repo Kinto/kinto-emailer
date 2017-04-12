@@ -45,6 +45,15 @@ If ``mail.queue_path`` is set, the emails are storage in a local Maildir queue.
 
 See `more details about Pyramid Mailer configuration <http://docs.pylonsproject.org/projects/pyramid_mailer/en/latest/#configuration>`_.
 
+Validate configuration
+----------------------
+
+The following command will send a dummy email to the specified recipient or will fail if the configuration is not correct:
+
+::
+
+    $ kinto-send-email config/kinto.ini testemailer@restmail.net
+
 
 Development
 -----------
