@@ -45,7 +45,7 @@ $(VENV)/bin/kinto: install
 	$(VENV)/bin/pip install kinto
 
 run-kinto: install-kinto
-	$(VENV)/bin/kinto --ini kinto_emailer/tests/config/kinto.ini start --reload
+	$(VENV)/bin/kinto start --ini kinto_emailer/tests/config/kinto.ini --reload
 
 need-kinto-running:
 	@curl http://localhost:8888/v0/ 2>/dev/null 1>&2 || (echo "Run 'make run-kinto' before starting tests." && exit 1)
