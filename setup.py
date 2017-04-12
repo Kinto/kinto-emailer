@@ -16,8 +16,7 @@ CONTRIBUTORS = read_file('CONTRIBUTORS.rst')
 
 
 REQUIREMENTS = [
-    'kinto>5',
-    'pyramid<1.8',
+    'kinto > 5',
     'pyramid_mailer',
 ]
 

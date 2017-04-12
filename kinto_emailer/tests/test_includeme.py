@@ -6,6 +6,7 @@ import configparser
 
 
 from kinto import main as kinto_main
+from kinto.core import errors
 from kinto.core.events import AfterResourceChanged
 from kinto.core.testing import BaseWebTest, get_user_headers, FormattedErrorMixin
 from kinto_emailer import get_messages, send_notification
@@ -39,8 +40,9 @@ class EmailerTest(BaseWebTest, unittest.TestCase):
     api_prefix = "v1"
     config = 'config/kinto.ini'
 
-    def get_app_settings(self, extras=None):
-        ini_path = os.path.join(HERE, self.config)
+    @classmethod
+    def get_app_settings(cls, extras=None):
+        ini_path = os.path.join(HERE, cls.config)
         config = configparser.ConfigParser()
         config.read(ini_path)
         settings = dict(config.items('app:main'))
@@ -325,8 +327,9 @@ class SendNotificationTest(unittest.TestCase):
 
 
 class SignerEventsTest(EmailerTest):
-    def get_app_settings(self, extras=None):
-        settings = super(SignerEventsTest, self).get_app_settings(extras)
+    @classmethod
+    def get_app_settings(cls, extras=None):
+        settings = super().get_app_settings(extras)
         settings['kinto.includes'] += ' kinto_signer'
         settings['kinto.signer.resources'] = (
             '/buckets/staging/collections/addons;'
@@ -469,7 +472,9 @@ class HookValidationTest(FormattedErrorMixin, EmailerTest):
                               {'data': self.valid_collection},
                               headers=self.headers,
                               status=400)
-        self.assertFormattedError(r, 400, errno=107, error='Invalid parameters',
+        self.assertFormattedError(r, 400,
+                                  errno=errors.ERRORS.INVALID_PARAMETERS,
+                                  error='Invalid parameters',
                                   message='Missing "hooks"', info=None)
 
     def test_fails_if_missing_template(self):
