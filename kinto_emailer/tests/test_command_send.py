@@ -19,4 +19,3 @@ class CommandTest(unittest.TestCase):
                 args, kwargs = get_mailer().send_immediately.call_args_list[0]
                 assert "kinto-emailer" in args[0].subject
                 assert not kwargs["fail_silently"]
-
