@@ -20,6 +20,12 @@ REQUIREMENTS = [
     'pyramid_mailer',
 ]
 
+ENTRY_POINTS = {
+    'console_scripts': [
+        'kinto-send-email = kinto_emailer.command_send:main'
+    ],
+}
+
 setup(name='kinto-emailer',
       version='0.4.0.dev0',
       description='Kinto emailer plugin',
@@ -38,4 +44,5 @@ setup(name='kinto-emailer',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
-      install_requires=REQUIREMENTS)
+      install_requires=REQUIREMENTS,
+      entry_points=ENTRY_POINTS)

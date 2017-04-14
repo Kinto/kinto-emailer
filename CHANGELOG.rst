@@ -9,6 +9,7 @@ This document describes changes between each past release.
 **New features**
 
 - Add a ``validate_setup.py`` script to check that server can actually send emails
+- Add a ``kinto-send-email`` command to test the configuration (fixes #35)
 
 **Bug fixes**
 
