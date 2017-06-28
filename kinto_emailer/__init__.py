@@ -137,9 +137,13 @@ def get_messages(storage, context):
 
 def _validate_emailer_settings(event):
     request = event.request
-    bucket_uri = '/buckets/{bucket_id}'.format(**event.payload)
+    resource_name = event.payload['resource_name']
 
     for impacted in event.impacted_records:
+        # See Kinto/kinto#945
+        bid = impacted['new']['id'] if resource_name == "bucket" else event.payload['bucket_id']
+        bucket_uri = '/buckets/{}'.format(bid)
+
         metadata = impacted['new']
         if 'kinto-emailer' not in metadata:
             continue

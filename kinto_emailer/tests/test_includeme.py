@@ -466,7 +466,18 @@ class HookValidationTest(FormattedErrorMixin, EmailerTest):
                               status=400)
         assert 'Missing "hooks"' in r.json['message']
 
-    def test_validation_errors_are_well_formatted(self):
+    def test_bucket_validation_errors_are_well_formatted(self):
+        self.valid_collection['kinto-emailer'].pop('hooks')
+        r = self.app.post_json('/buckets',
+                               {'data': self.valid_collection},
+                               headers=self.headers,
+                               status=400)
+        self.assertFormattedError(r, 400,
+                                  errno=errors.ERRORS.INVALID_PARAMETERS,
+                                  error='Invalid parameters',
+                                  message='Missing "hooks"', info=None)
+
+    def test_collection_validation_errors_are_well_formatted(self):
         self.valid_collection['kinto-emailer'].pop('hooks')
         r = self.app.put_json('/buckets/b/collections/c',
                               {'data': self.valid_collection},
