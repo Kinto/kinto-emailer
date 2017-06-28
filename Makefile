@@ -42,7 +42,7 @@ clean:
 
 install-kinto: $(VENV)/bin/kinto
 $(VENV)/bin/kinto: install
-	$(VENV)/bin/pip install kinto
+	$(VENV)/bin/pip install "kinto<1.9"
 
 run-kinto: install-kinto
 	$(VENV)/bin/kinto start --ini kinto_emailer/tests/config/kinto.ini
