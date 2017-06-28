@@ -468,10 +468,10 @@ class HookValidationTest(FormattedErrorMixin, EmailerTest):
 
     def test_bucket_validation_errors_are_well_formatted(self):
         self.valid_collection['kinto-emailer'].pop('hooks')
-        r = self.app.put_json('/buckets/b',
-                              {'data': self.valid_collection},
-                              headers=self.headers,
-                              status=400)
+        r = self.app.post_json('/buckets',
+                               {'data': self.valid_collection},
+                               headers=self.headers,
+                               status=400)
         self.assertFormattedError(r, 400,
                                   errno=errors.ERRORS.INVALID_PARAMETERS,
                                   error='Invalid parameters',

@@ -6,7 +6,9 @@ This document describes changes between each past release.
 0.5.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+**Bug fixes**
+
+- Fix crash when creating bucket with ``POST /buckets`` (fixes #43)
 
 
 0.4.0 (2017-04-14)

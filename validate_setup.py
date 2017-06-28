@@ -55,6 +55,8 @@ def main(args=None):
 
     args = parser.parse_args(args)
 
+    cli_utils.setup_logger(logger, args)
+
     client = cli_utils.create_client_from_args(args)
 
     # 1. Check capabilities
