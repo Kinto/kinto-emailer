@@ -64,7 +64,7 @@ def send_notification(event):
                 mailer.send_immediately(message, fail_silently=False)
             else:
                 mailer.send_to_queue(message)
-    except:
+    except Exception:
         logger.exception("Could not send notifications")
 
 
