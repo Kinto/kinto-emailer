@@ -3,10 +3,12 @@ Changelog
 
 This document describes changes between each past release.
 
-1.1.0 (unreleased)
+1.0.1 (2017-11-21)
 ------------------
 
-- Nothing changed yet.
+**Bug fixes**
+
+- Don't block on Pyramid 1.8 anymore. (#46)
 
 
 1.0.0 (2017-06-28)
