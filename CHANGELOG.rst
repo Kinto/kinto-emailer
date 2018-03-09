@@ -6,7 +6,9 @@ This document describes changes between each past release.
 1.1.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+**Internal changes**
+
+- Get rid of ``six``
 
 
 1.0.1 (2017-11-21)
