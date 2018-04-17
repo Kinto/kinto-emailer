@@ -27,7 +27,7 @@ ENTRY_POINTS = {
 }
 
 setup(name='kinto-emailer',
-      version='1.1.0.dev0',
+      version='1.0.2',
       description='Kinto emailer plugin',
       long_description=README + "\n\n" + CHANGELOG + "\n\n" + CONTRIBUTORS,
       license='Apache License (2.0)',
