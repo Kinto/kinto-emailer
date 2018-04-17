@@ -343,6 +343,7 @@ class SignerEventsTest(EmailerTest):
         return settings
 
     def setUp(self):
+        self._patch_autograph()
         collection = {
             'kinto-emailer': {
                 'hooks': [{
@@ -360,11 +361,11 @@ class SignerEventsTest(EmailerTest):
         self.app.post_json('/buckets/staging/collections/addons/records',
                            {'data': {'age': 42}},
                            headers=self.headers)
-        self._patch_autograph()
 
     def _patch_autograph(self):
         # Patch calls to Autograph.
         patch = mock.patch('kinto_signer.signer.autograph.requests')
+        self.addCleanup(patch.stop)
         mocked = patch.start()
         mocked.post.return_value.json.return_value = [{
             "signature": "",

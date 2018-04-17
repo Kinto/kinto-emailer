@@ -1,11 +1,11 @@
+import configparser
 import os.path
 import shutil
 from glob import glob
-from six.moves.urllib.parse import urljoin
+from urllib.parse import urljoin
 
 import unittest
 import requests
-from six.moves import configparser
 
 from kinto_client import Client
 
