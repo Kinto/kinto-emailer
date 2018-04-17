@@ -34,7 +34,6 @@ setup(name='kinto-emailer',
       classifiers=[
           "Programming Language :: Python",
           "Programming Language :: Python :: 3",
-          "Programming Language :: Python :: 3.5",
           "Programming Language :: Python :: 3.6",
           "Topic :: Internet :: WWW/HTTP",
           "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
