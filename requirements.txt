@@ -22,7 +22,7 @@ pycparser==2.18
 pyramid==1.9.1
 pyramid-mailer==0.15.1
 pyramid-multiauth==0.9.0
-pyramid-tm==2.2
+pyramid-tm==2.2.1
 python-dateutil==2.7.5
 repoze.lru==0.7
 repoze.sendmail==4.4.1
