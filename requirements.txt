@@ -8,7 +8,7 @@ cornice==3.0.0
 cornice-swagger==0.5.2
 dockerflow==2017.11.0
 hupper==1.0
-idna==2.6
+idna==2.8
 iso8601==0.1.12
 jsonpatch==1.16
 jsonpointer==1.14
