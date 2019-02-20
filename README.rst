@@ -145,7 +145,7 @@ The possible filters are:
   ``kinto_signer.events.ReviewRequested``, ``kinto_signer.events.ReviewApproved``,
   ``kinto_signer.events.ReviewRejected``
 
-If a filter value starts with the special character ``"^"``, then the matching will consider the filter value to be a regular expression.
+If a filter value starts with the special character ``^``, then the matching will consider the filter value to be a regular expression.
 
 For example, in order to exclude a specific ``collection_id``, set the filter value to: ``^(?!normandy-recipes$)``.
 
