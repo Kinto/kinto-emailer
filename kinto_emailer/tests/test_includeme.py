@@ -157,6 +157,28 @@ class GetMessagesTest(unittest.TestCase):
 
         assert len(messages) == 0
 
+    def test_get_messages_can_filter_using_regexps(self):
+        self.storage.get.return_value = {
+            'kinto-emailer': {
+                'hooks': [{
+                    'collection_id': '^(?!normandy-recipes$)',
+                    'template': 'Poll changed.',
+                    'recipients': ['me@you.com'],
+                }]
+            }
+        }
+        self.payload.update({'collection_id': 'normandy-recipes'})
+        messages = get_messages(self.storage, self.payload)
+        assert len(messages) == 0
+
+        self.payload.update({'collection_id': 'some-normandy-recipes'})
+        messages = get_messages(self.storage, self.payload)
+        assert len(messages) == 1
+
+        self.payload.update({'collection_id': 'normandy-recipes-all'})
+        messages = get_messages(self.storage, self.payload)
+        assert len(messages) == 1
+
     def test_get_messages_ignores_resource_if_not_specified(self):
         self.storage.get.return_value = {
             'kinto-emailer': {

@@ -107,6 +107,13 @@ def _expand_recipients(storage, recipients, context):
     return emails
 
 
+def _match(hook, context):
+    # Allow support of regexps in fields, if they start with ^
+    if hook.startswith("^"):
+        return re.match(hook, context)
+    return hook == context
+
+
 def get_messages(storage, context):
     hooks = _get_emailer_hooks(storage, context)
     filters = ('event', 'action', 'resource_name',
@@ -116,7 +123,7 @@ def get_messages(storage, context):
         # Filter out hook if it doesn't meet current event attributes, and keep
         # if nothing is specified.
         conditions_met = all([field not in hook or field not in context or
-                              hook[field] == context[field]
+                              _match(hook[field], context[field])
                               for field in filters])
         if not conditions_met:
             continue
