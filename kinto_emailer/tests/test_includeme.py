@@ -390,6 +390,7 @@ class SignerEventsTest(EmailerTest):
         self.addCleanup(patch.stop)
         mocked = patch.start()
         mocked.post.return_value.json.return_value = [{
+            "ref": "",
             "signature": "",
             "hash_algorithm": "",
             "signature_encoding": "",
