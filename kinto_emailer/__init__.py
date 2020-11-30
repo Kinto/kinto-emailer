@@ -161,16 +161,9 @@ def _validate_emailer_settings(event):
 
         for hook in hooks:
             try:
-                template = hook['template']
+                hook['template']
             except KeyError:
                 raise_invalid(request, description='Missing "template".')
-
-            try:
-                context = context_from_event(event)
-                template.format(**context)
-            except KeyError as e:
-                error_msg = 'Invalid template variable: %s' % e
-                raise_invalid(request, description=error_msg)
 
             recipients = hook.get('recipients', [])
             if not recipients:
