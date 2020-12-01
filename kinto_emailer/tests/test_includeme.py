@@ -558,12 +558,3 @@ class HookValidationTest(FormattedErrorMixin, EmailerTest):
                               headers=self.headers,
                               status=400)
         assert 'Invalid recipients /buckets/b/group/g' in r.json['message']
-
-    def test_fails_if_template_contains_bad_placeholders(self):
-        tpl = 'The current temperature is {degres}C.'
-        self.valid_collection['kinto-emailer']['hooks'][0]['template'] = tpl
-        r = self.app.put_json('/buckets/b/collections/c',
-                              {'data': self.valid_collection},
-                              headers=self.headers,
-                              status=400)
-        assert 'degres' in r.json['message']
