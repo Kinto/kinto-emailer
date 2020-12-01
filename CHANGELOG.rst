@@ -3,7 +3,7 @@ Changelog
 
 This document describes changes between each past release.
 
-1.2.0 (unreleased)
+2.0.0 (2020-12-01)
 ------------------
 
 - Remove template variable validation
