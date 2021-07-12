@@ -27,7 +27,7 @@ python-dateutil==2.8.1
 repoze.lru==0.7
 repoze.sendmail==4.4.1
 requests==2.25.1
-simplejson==3.17.2
+simplejson==3.17.3
 transaction==3.0.1
 translationstring==1.4
 ujson==4.0.2
