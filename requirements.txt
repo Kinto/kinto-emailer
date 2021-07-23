@@ -26,7 +26,7 @@ pyramid-tm==2.4
 python-dateutil==2.8.2
 repoze.lru==0.7
 repoze.sendmail==4.4.1
-requests==2.25.1
+requests==2.26.0
 simplejson==3.17.3
 transaction==3.0.1
 translationstring==1.4
