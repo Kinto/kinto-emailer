@@ -9,7 +9,7 @@ from kinto import main as kinto_main
 from kinto.core import errors
 from kinto.core.events import AfterResourceChanged
 from kinto.core.testing import BaseWebTest, get_user_headers, FormattedErrorMixin
-from kinto_emailer import get_messages, send_notification
+from kinto_emailer import context_from_event, get_messages, send_notification
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -348,6 +348,16 @@ class SendNotificationTest(unittest.TestCase):
             assert get_mailer().send_to_queue.called
 
 
+class ContextContentTest(unittest.TestCase):
+    def test_context_contains_settings(self):
+        event = mock.MagicMock()
+        event.request.registry.settings = {"project_name": "Kinto DEV"}
+
+        context = context_from_event(event)
+
+        assert "{settings[project_name]}".format(**context) == "Kinto DEV"
+
+
 class SignerEventsTest(EmailerTest):
     @classmethod
     def get_app_settings(cls, extras=None):
@@ -370,6 +380,7 @@ class SignerEventsTest(EmailerTest):
             'kinto-emailer': {
                 'hooks': [{
                     'event': 'kinto_signer.events.ReviewRequested',
+                    'subject': '[{settings[project_name]}]',
                     'template': '{user_id} requested review on {uri}.',
                     'recipients': ['me@you.com'],
                 }]
@@ -403,7 +414,9 @@ class SignerEventsTest(EmailerTest):
             self.app.patch_json('/buckets/staging/collections/addons',
                                 {'data': {'status': 'to-review'}},
                                 headers=self.headers)
-            assert get_mailer().send_immediately.called
+            args, _ = get_mailer().send_immediately.call_args_list[0]
+            message = args[0]
+            assert message.subject == '[Emailer DEV]'
 
 
 class BatchRequestTest(EmailerTest):

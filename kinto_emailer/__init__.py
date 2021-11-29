@@ -33,6 +33,9 @@ def context_from_event(event):
                    client_address=event.request.client_addr,
                    user_agent=event.request.user_agent,
                    **event.payload)
+
+    context["settings"] = event.request.registry.settings
+
     # The following payload attributes are not always present.
     # See Kinto/kinto#945
     context.setdefault('record_id', '{record_id}')
@@ -54,7 +57,6 @@ def send_notification(event):
         _context = context.copy()
         object_id = impacted.get('new', impacted.get('old'))['id']
         _context[resource_name + '_id'] = _context['id'] = object_id
-
         messages += get_messages(storage, _context)
 
     mailer = get_mailer(event.request)
