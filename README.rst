@@ -165,7 +165,7 @@ The template string can have placeholders:
 * ``root_url``
 * ``client_address``
 * ``user_agent``
-* ``settings.<name>``
+* ``settings[name]``
 
 For example:
 

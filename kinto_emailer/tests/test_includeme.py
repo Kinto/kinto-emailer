@@ -355,7 +355,7 @@ class ContextContentTest(unittest.TestCase):
 
         context = context_from_event(event)
 
-        assert context["settings.project_name"] == "Kinto DEV"
+        assert "{settings[project_name]}".format(**context) == "Kinto DEV"
 
 
 class SignerEventsTest(EmailerTest):
@@ -380,6 +380,7 @@ class SignerEventsTest(EmailerTest):
             'kinto-emailer': {
                 'hooks': [{
                     'event': 'kinto_signer.events.ReviewRequested',
+                    'subject': '[{settings[project_name]}]',
                     'template': '{user_id} requested review on {uri}.',
                     'recipients': ['me@you.com'],
                 }]
@@ -413,7 +414,9 @@ class SignerEventsTest(EmailerTest):
             self.app.patch_json('/buckets/staging/collections/addons',
                                 {'data': {'status': 'to-review'}},
                                 headers=self.headers)
-            assert get_mailer().send_immediately.called
+            args, _ = get_mailer().send_immediately.call_args_list[0]
+            message = args[0]
+            assert message.subject == '[Emailer DEV]'
 
 
 class BatchRequestTest(EmailerTest):
