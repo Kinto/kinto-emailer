@@ -33,6 +33,10 @@ def context_from_event(event):
                    client_address=event.request.client_addr,
                    user_agent=event.request.user_agent,
                    **event.payload)
+
+    for key, val in event.request.registry.settings.items():
+        context[f"settings.{key}"] = str(val)
+
     # The following payload attributes are not always present.
     # See Kinto/kinto#945
     context.setdefault('record_id', '{record_id}')

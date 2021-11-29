@@ -9,7 +9,7 @@ from kinto import main as kinto_main
 from kinto.core import errors
 from kinto.core.events import AfterResourceChanged
 from kinto.core.testing import BaseWebTest, get_user_headers, FormattedErrorMixin
-from kinto_emailer import get_messages, send_notification
+from kinto_emailer import context_from_event, get_messages, send_notification
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -346,6 +346,16 @@ class SendNotificationTest(unittest.TestCase):
         with mock.patch('kinto_emailer.get_mailer') as get_mailer:
             send_notification(event)
             assert get_mailer().send_to_queue.called
+
+
+class ContextContentTest(unittest.TestCase):
+    def test_context_contains_settings(self):
+        event = mock.MagicMock()
+        event.request.registry.settings = {"project_name": "Kinto DEV"}
+
+        context = context_from_event(event)
+
+        assert context["settings.project_name"] == "Kinto DEV"
 
 
 class SignerEventsTest(EmailerTest):

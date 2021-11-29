@@ -6,7 +6,10 @@ This document describes changes between each past release.
 2.1.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+**New features**
+
+- Add ability to use settings values in placeholders (#294).
+  For example:  ``"subject": "Email from {settings.project_name}"``
 
 
 2.0.0 (2020-12-01)
