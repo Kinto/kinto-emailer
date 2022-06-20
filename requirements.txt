@@ -1,6 +1,6 @@
 attrs==21.4.0
 bcrypt==3.2.2
-certifi==2022.5.18.1
+certifi==2022.6.15
 cffi==1.15.0
 charset-normalizer==2.0.12
 colander==1.8.3
