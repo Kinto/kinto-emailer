@@ -2,7 +2,7 @@ attrs==22.1.0
 bcrypt==4.0.1
 certifi==2022.9.24
 cffi==1.15.1
-charset-normalizer==2.1.1
+charset-normalizer==3.0.0
 colander==1.8.3
 colorama==0.4.6
 cornice==6.0.1
