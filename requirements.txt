@@ -32,7 +32,7 @@ requests==2.28.2
 six==1.16.0
 transaction==3.1.0
 translationstring==1.4
-urllib3==1.26.14
+urllib3==1.26.15
 venusian==3.0.0
 waitress==2.1.2
 WebOb==1.8.7
