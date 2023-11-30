@@ -18,7 +18,7 @@ jobs:
           - toxenv: flake8
             python-version: "3.X"
           - toxenv: functional
-            python-version: "3.X"
+            python-version: "3.11"
 
     steps:
       - uses: actions/checkout@v2
