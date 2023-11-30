@@ -24,7 +24,7 @@ pyramid==2.0
 pyramid-mailer==0.15.1
 pyramid-multiauth==1.0.1
 pyramid-tm==2.5
-pyrsistent==0.19.3
+pyrsistent==0.20.0
 python-dateutil==2.8.2
 python-rapidjson==1.12
 repoze.sendmail==4.4.1
