@@ -1,15 +1,11 @@
 Kinto Emailer
 #############
 
-.. image:: https://img.shields.io/travis/Kinto/kinto-emailer.svg
-        :target: https://travis-ci.org/Kinto/kinto-emailer
+.. image:: https://github.com/Kinto/kinto-emailer/actions/workflows/tests.yml/badge.svg
+        :target: https://github.com/Kinto/kinto-emailer/actions
 
 .. image:: https://img.shields.io/pypi/v/kinto-emailer.svg
         :target: https://pypi.python.org/pypi/kinto-emailer
-
-.. image:: https://coveralls.io/repos/Kinto/kinto-emailer/badge.svg?branch=master
-        :target: https://coveralls.io/r/Kinto/kinto-emailer
-
 
 **kinto-emailer**  send emails when some events arise (e.g. new records have
 been created). It relies on `Pyramid Mailer <https://github.com/Pylons/pyramid_mailer/>`_
