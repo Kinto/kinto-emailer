@@ -1,3 +1,0 @@
-[run]
-omit = kinto_emailer/tests/*
-relative_files = True

@@ -8,3 +8,5 @@ __pycache__/
 *.egg
 mail/
 .venv/
+build/
+dist/

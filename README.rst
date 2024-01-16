@@ -152,7 +152,7 @@ Template
 The template string can have placeholders:
 
 * ``bucket_id``
-* ``id``: record or collection ``id``)
+* ``id``: record or collection ``id``
 * ``user_id``
 * ``resource_name``
 * ``uri``
@@ -180,7 +180,6 @@ To run the unit tests::
 For the functional tests, run a Kinto instance in a separate terminal::
 
   $ make run-kinto
-
 
 And start the test suite::
 

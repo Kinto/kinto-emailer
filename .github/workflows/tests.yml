@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        toxenv: [py38, flake8, functional]
+        toxenv: [py38, lint, functional]
         include:
           - toxenv: py38
             python-version: "3.8"
-          - toxenv: flake8
+          - toxenv: lint
             python-version: "3.X"
           - toxenv: functional
             python-version: "3.11"
