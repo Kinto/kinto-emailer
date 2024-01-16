@@ -22,12 +22,10 @@ def main(args=None):
     env = bootstrap(config_file)
 
     print("Send email to %r" % recipient)
-    registry = env['registry']
+    registry = env["registry"]
     mailer = get_mailer(registry)
 
-    message = Message(subject=subject,
-                      recipients=[recipient],
-                      body=body)
+    message = Message(subject=subject, recipients=[recipient], body=body)
     mailer.send_immediately(message, fail_silently=False)
     print("Done.")
     return 0
