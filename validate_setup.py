@@ -1,12 +1,14 @@
+import logging
 import sys
 import time
 
 import requests
-
 from kinto_http import cli_utils
 
 
-DEFAULT_SERVER = "https://kinto-writer.stage.mozaws.net/v1"
+logger = logging.getLogger(__name__)
+
+DEFAULT_SERVER = "https://remote-settings.allizom.org/v1"
 BUCKET = "staging"
 COLLECTION = "qa"
 MAILBOX = "kintoemailer"
@@ -28,19 +30,21 @@ def fetch_emails(mailbox):
 def setup_notifs_signing(client, recipient):
     setup = {
         "kinto-emailer": {
-            "hooks": [{
-                "event": "kinto_signer.events.ReviewRequested",
-                "subject": "{user_id} requested review on {bucket_id}/{collection_id}.",
-                "template": "Review changes at {root_url}admin/#/buckets/{bucket_id}/collections/{collection_id}/records",
-                "recipients": [recipient]
-            },
-            {
-                "resource_name": "record",
-                "action": "create",
-                "subject": SUBJECT_EMAIL_CREATION,
-                "template": "For QA purposes :)",
-                "recipients": [recipient]
-            }]
+            "hooks": [
+                {
+                    "event": "kinto_remote_settings.signer.events.ReviewRequested",
+                    "subject": "{user_id} requested review on {bucket_id}/{collection_id}.",
+                    "template": "Review changes at {root_url}admin/#/buckets/{bucket_id}/collections/{collection_id}/records",
+                    "recipients": [recipient],
+                },
+                {
+                    "resource_name": "record",
+                    "action": "create",
+                    "subject": SUBJECT_EMAIL_CREATION,
+                    "template": "For QA purposes :)",
+                    "recipients": [recipient],
+                },
+            ]
         }
     }
     client.patch_collection(data=setup)
@@ -51,7 +55,8 @@ def main(args=None):
         description="Validate kinto-emailer setup",
         default_server=DEFAULT_SERVER,
         default_bucket=BUCKET,
-        default_collection=COLLECTION)
+        default_collection=COLLECTION,
+    )
 
     args = parser.parse_args(args)
 
@@ -76,7 +81,7 @@ def main(args=None):
     print("Create a dummy record")
     client.create_record(data={"script": "validate kinto-emailer setup"})
 
-    # 4. If signing is enabled for this collection, then see integration with kinto-signer.
+    # 4. If signing is enabled for this collection, then also check email for ReviewRequested.
     signed_resources = capabilities.get("signer", {"resources": []})["resources"]
     ids = [(r["source"]["bucket"], r["source"]["collection"]) for r in signed_resources]
     signing_enabled = (args.bucket, args.collection) in ids
@@ -95,7 +100,7 @@ def main(args=None):
         if SUBJECT_EMAIL_CREATION not in subjects:
             if time.time() - first_try < RETRY_TIMEOUT:
                 time.sleep(3)
-                sys.stdout.write('.')
+                sys.stdout.write(".")
                 sys.stdout.flush()
                 continue
         break
@@ -113,5 +118,6 @@ def main(args=None):
 
     return 0
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())
