@@ -237,7 +237,7 @@ class GetMessagesTest(unittest.TestCase):
             "kinto-emailer": {
                 "hooks": [
                     {
-                        "event": "kinto_signer.events.ReviewRequested",
+                        "event": "mylib.MyEvent",
                         "template": "Poll changed.",
                         "recipients": ["me@you.com"],
                     }
@@ -248,7 +248,7 @@ class GetMessagesTest(unittest.TestCase):
         messages = get_messages(self.storage, self.payload)
         assert len(messages) == 0
 
-        self.payload.update({"event": "kinto_signer.events.ReviewRequested"})
+        self.payload.update({"event": "mylib.MyEvent"})
         messages = get_messages(self.storage, self.payload)
         assert len(messages) == 1
 
