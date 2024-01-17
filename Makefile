@@ -2,7 +2,6 @@ VIRTUALENV = virtualenv
 VENV := $(shell echo $${VIRTUAL_ENV-$$PWD/.venv})
 PYTHON = $(VENV)/bin/python
 INSTALL_STAMP = $(VENV)/.install.stamp
-TEMPDIR := $(shell mktemp -d)
 
 .IGNORE: clean
 .PHONY: all install virtualenv tests tests-once
@@ -21,18 +20,15 @@ $(PYTHON):
 	virtualenv $(VENV)
 
 lint: install
-	$(VENV)/bin/ruff check kinto_emailer
-	$(VENV)/bin/ruff format --check kinto_emailer
+	$(VENV)/bin/ruff check kinto_emailer *.py
+	$(VENV)/bin/ruff format --check kinto_emailer *.py
 
 format: install
-	$(VENV)/bin/ruff check --fix kinto_emailer
-	$(VENV)/bin/ruff format kinto_emailer
+	$(VENV)/bin/ruff check --fix kinto_emailer *.py
+	$(VENV)/bin/ruff format kinto_emailer *.py
 
 build-requirements:
-	$(VIRTUALENV) $(TEMPDIR)
-	$(TEMPDIR)/bin/pip install -U pip
-	$(TEMPDIR)/bin/pip install -Ue .
-	$(TEMPDIR)/bin/pip freeze | grep -v -- '^-e' > requirements.txt
+	pip-compile --generate-hashes requirements.in > requirements.txt
 
 tests-once: install
 	$(VENV)/bin/py.test --cov-report term-missing --cov-fail-under 100 --cov kinto_emailer
