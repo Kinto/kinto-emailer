@@ -1,5 +1,4 @@
 VENV := $(shell echo $${VIRTUAL_ENV-$$PWD/.venv})
-PYTHON = $(VENV)/bin/python
 INSTALL_STAMP = $(VENV)/.install.stamp
 
 .IGNORE: clean
@@ -10,14 +9,11 @@ OBJECTS = .venv .coverage
 all: install
 
 install: $(INSTALL_STAMP) pyproject.toml requirements.txt
-$(INSTALL_STAMP): $(PYTHON) pyproject.toml requirements.txt
+$(INSTALL_STAMP): pyproject.toml requirements.txt
+	python -m venv $(VENV)
 	$(VENV)/bin/pip install -r requirements.txt
 	$(VENV)/bin/pip install ".[dev]"
 	touch $(INSTALL_STAMP)
-
-virtualenv: $(PYTHON)
-$(PYTHON):
-	python -m venv $(VENV)
 
 lint: install
 	$(VENV)/bin/ruff check kinto_emailer *.py
@@ -27,8 +23,8 @@ format: install
 	$(VENV)/bin/ruff check --fix kinto_emailer *.py
 	$(VENV)/bin/ruff format kinto_emailer *.py
 
-build-requirements:
-	pip-compile --generate-hashes requirements.in > requirements.txt
+requirements.txt: requirements.in
+	pip-compile -o requirements.txt requirements.in
 
 tests-once: install
 	$(VENV)/bin/py.test --cov-report term-missing --cov-fail-under 100 --cov kinto_emailer

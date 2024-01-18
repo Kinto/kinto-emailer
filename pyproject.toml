@@ -2,7 +2,7 @@
 dynamic = ["version", "dependencies"]
 name = "kinto-emailer"
 description = "Kinto emailer plugin"
-readme = {file = "README.rst", content-type = "text/x-rst"}
+readme = "README.rst"
 license = {file = "LICENSE"}
 classifiers = [
     "Programming Language :: Python",
@@ -16,21 +16,21 @@ authors = [
   {name = "Mozilla Services", email = "developers@kinto-storage.org"},
 ]
 
-[tool.setuptools.packages.find]
-include = ["kinto_emailer"]
-
 [project.urls]
 Repository = "https://github.com/Kinto/kinto-emailer"
 
 [project.scripts]
 kinto-send-email = "kinto_emailer.command_send:main"
 
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.in"] }
+
+[tool.setuptools.packages.find]
+include = ["kinto_emailer"]
+
 [build-system]
 requires = ["setuptools>=64", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements.in"] }
 
 [project.optional-dependencies]
 dev = [
@@ -45,7 +45,8 @@ dev = [
     "webtest",
 ]
 
-[tool.setuptools_scm]
+[tool.pip-tools]
+generate-hashes = true
 
 [tool.coverage.run]
 omit = [
