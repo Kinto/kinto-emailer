@@ -33,8 +33,8 @@ tests: install
 	$(VENV)/bin/tox
 
 clean:
-	find . -name '*.pyc' -delete
-	find . -name '__pycache__' -type d -exec rm -fr {} \;
+	find src/ -name '*.pyc' -delete
+	find src/ -name '__pycache__' -type d -exec rm -fr {} \;
 	rm -rf .tox $(VENV) mail/ *.egg-info .pytest_cache .ruff_cache .coverage build dist
 
 run-kinto: install
