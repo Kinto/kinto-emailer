@@ -24,7 +24,7 @@ format: install
 	$(VENV)/bin/ruff format src tests *.py
 
 requirements.txt: requirements.in
-	pip-compile -o requirements.txt requirements.in
+	pip-compile requirements.in
 
 tests-once: install
 	$(VENV)/bin/py.test --cov-report term-missing --cov-fail-under 100 --cov kinto_emailer
