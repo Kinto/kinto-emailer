@@ -1,7 +1,8 @@
 .cache
 .tox
 .coverage
-records.json
+.pytest_cache
+.ruff_cache
 *.pyc
 __pycache__/
 *.egg-info/

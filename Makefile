@@ -35,6 +35,7 @@ tests: install
 clean:
 	find . -name '*.pyc' -delete
 	find . -name '__pycache__' -type d -exec rm -fr {} \;
+	rm -rf .tox $(VENV) mail/ *.egg-info .pytest_cache .ruff_cache .coverage build dist
 
 run-kinto: install
 	$(VENV)/bin/kinto start --ini kinto_emailer/tests/config/kinto.ini
