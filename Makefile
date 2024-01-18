@@ -38,10 +38,10 @@ clean:
 	rm -rf .tox $(VENV) mail/ *.egg-info .pytest_cache .ruff_cache .coverage build dist
 
 run-kinto: install
-	$(VENV)/bin/kinto start --ini kinto_emailer/tests/config/kinto.ini
+	$(VENV)/bin/kinto start --ini tests/config/kinto.ini
 
 need-kinto-running:
 	@curl http://localhost:8888/v0/ 2>/dev/null 1>&2 || (echo "Run 'make run-kinto' before starting tests." && exit 1)
 
 functional: install need-kinto-running
-	$(VENV)/bin/py.test kinto_emailer/tests/functional.py
+	$(VENV)/bin/py.test tests/functional.py
