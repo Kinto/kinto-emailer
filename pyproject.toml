@@ -25,9 +25,6 @@ kinto-send-email = "kinto_emailer.command_send:main"
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.in"] }
 
-[tool.setuptools.packages.find]
-include = ["kinto_emailer"]
-
 [build-system]
 requires = ["setuptools>=64", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
@@ -50,7 +47,7 @@ generate-hashes = true
 
 [tool.coverage.run]
 omit = [
-    "kinto_emailer/tests/*",
+    "tests/*",
 ]
 relative_files = true
 

@@ -16,12 +16,12 @@ $(INSTALL_STAMP): pyproject.toml requirements.txt
 	touch $(INSTALL_STAMP)
 
 lint: install
-	$(VENV)/bin/ruff check kinto_emailer *.py
-	$(VENV)/bin/ruff format --check kinto_emailer *.py
+	$(VENV)/bin/ruff check kinto_emailer tests *.py
+	$(VENV)/bin/ruff format --check kinto_emailer tests *.py
 
 format: install
-	$(VENV)/bin/ruff check --fix kinto_emailer *.py
-	$(VENV)/bin/ruff format kinto_emailer *.py
+	$(VENV)/bin/ruff check --fix kinto_emailer tests *.py
+	$(VENV)/bin/ruff format kinto_emailer tests *.py
 
 requirements.txt: requirements.in
 	pip-compile -o requirements.txt requirements.in
