@@ -1,5 +1,4 @@
 .cache
-.tox
 .coverage
 .pytest_cache
 .ruff_cache

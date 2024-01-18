@@ -28,16 +28,15 @@ format: install
 requirements.txt: requirements.in
 	pip-compile requirements.in
 
-tests-once: install
+tests: test
+tests-once: test
+test: install
 	$(VENV)/bin/py.test --cov-report term-missing --cov-fail-under 100 --cov kinto_emailer
-
-tests: install
-	$(VENV)/bin/tox
 
 clean:
 	find src/ -name '*.pyc' -delete
 	find src/ -name '__pycache__' -type d -exec rm -fr {} \;
-	rm -rf .tox $(VENV) mail/ *.egg-info .pytest_cache .ruff_cache .coverage build dist
+	rm -rf $(VENV) mail/ *.egg-info .pytest_cache .ruff_cache .coverage build dist
 
 run-kinto: install
 	$(VENV)/bin/kinto start --ini tests/config/kinto.ini

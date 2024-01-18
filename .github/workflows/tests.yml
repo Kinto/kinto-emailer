@@ -1,56 +1,56 @@
-on:
-  push:
-    branches:
-      - master
-  pull_request:
+name: Run CI checks
 
-name: Unit Testing
+on: pull_request
+
+permissions:
+  contents: read
+
 jobs:
-  chore:
-    name: Unit Tests
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+
+      - name: Install dependencies
+        run: make install
+
+      - name: Run linting and formatting checks
+        run: make lint
+
+  unit-tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        toxenv: [py38, lint, functional]
-        include:
-          - toxenv: py38
-            python-version: "3.8"
-          - toxenv: lint
-            python-version: "3.X"
-          - toxenv: functional
-            python-version: "3.11"
-
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
 
-      - name: Install virtualenv
-        run: |
-          pip install virtualenv
-          virtualenv --python=python3 .venv
+      - name: Run unit tests
+        run: make test
 
-      - name: Print environment
-        run: |
-          source .venv/bin/activate
-          python --version
-          pip --version
+  functional-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
       - name: Install dependencies
-        run: |
-          source .venv/bin/activate
-          pip install tox
+        run: make install
 
-      - name: Run Kinto
-        if: matrix.toxenv == 'functional'
-        run: |
-          source .venv/bin/activate
-          make run-kinto & sleep 5
+      - name: Run kinto
+        run: make run-kinto & sleep 5
 
-      - name: Tox
-        run: |
-          source .venv/bin/activate
-          tox -e ${{ matrix.toxenv }}
-
+      - name: Run functional tests
+        run: make functional
