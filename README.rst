@@ -152,7 +152,7 @@ Template
 The template string can have placeholders:
 
 * ``bucket_id``
-* ``id``: record or collection ``id``)
+* ``id``: record or collection ``id``
 * ``user_id``
 * ``resource_name``
 * ``uri``
@@ -181,7 +181,15 @@ For the functional tests, run a Kinto instance in a separate terminal::
 
   $ make run-kinto
 
-
 And start the test suite::
 
   $ make functional
+
+
+Releasing
+=========
+
+1. Create a release on Github on https://github.com/Kinto/kinto-emailer/releases/new
+2. Create a new tag `X.Y.Z` (*This tag will be created from the target when you publish this release.*)
+3. Generate release notes
+4. Publish release

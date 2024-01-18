@@ -1,55 +1,49 @@
-VIRTUALENV = virtualenv
 VENV := $(shell echo $${VIRTUAL_ENV-$$PWD/.venv})
-PYTHON = $(VENV)/bin/python
-DEV_STAMP = $(VENV)/.dev_env_installed.stamp
 INSTALL_STAMP = $(VENV)/.install.stamp
-TEMPDIR := $(shell mktemp -d)
 
 .IGNORE: clean
-.PHONY: all install virtualenv tests install-dev tests-once
+.PHONY: all install virtualenv tests tests-once
 
 OBJECTS = .venv .coverage
 
 all: install
-install: $(INSTALL_STAMP)
-$(INSTALL_STAMP): $(PYTHON) requirements.txt setup.py
+
+$(VENV)/bin/python:
+	python -m venv $(VENV)
+
+install: $(INSTALL_STAMP) pyproject.toml requirements.txt
+$(INSTALL_STAMP): $(VENV)/bin/python pyproject.toml requirements.txt
 	$(VENV)/bin/pip install -r requirements.txt
-	$(PYTHON) setup.py develop
+	$(VENV)/bin/pip install ".[dev]"
 	touch $(INSTALL_STAMP)
 
-install-dev: $(INSTALL_STAMP) $(DEV_STAMP)
-$(DEV_STAMP): $(PYTHON) dev-requirements.txt
-	$(VENV)/bin/pip install -r dev-requirements.txt
-	touch $(DEV_STAMP)
+lint: install
+	$(VENV)/bin/ruff check src tests *.py
+	$(VENV)/bin/ruff format --check src tests *.py
 
-virtualenv: $(PYTHON)
-$(PYTHON):
-	virtualenv $(VENV)
+format: install
+	$(VENV)/bin/ruff check --fix src tests *.py
+	$(VENV)/bin/ruff format src tests *.py
 
-build-requirements:
-	$(VIRTUALENV) $(TEMPDIR)
-	$(TEMPDIR)/bin/pip install -U pip
-	$(TEMPDIR)/bin/pip install -Ue .
-	$(TEMPDIR)/bin/pip freeze | grep -v -- '^-e' > requirements.txt
+requirements.txt: requirements.in
+	pip-compile requirements.in
 
-tests-once: install-dev
+tests-once: install
 	$(VENV)/bin/py.test --cov-report term-missing --cov-fail-under 100 --cov kinto_emailer
-tests: install-dev
+
+tests: install
 	$(VENV)/bin/tox
 
 clean:
-	find . -name '*.pyc' -delete
-	find . -name '__pycache__' -type d -exec rm -fr {} \;
+	find src/ -name '*.pyc' -delete
+	find src/ -name '__pycache__' -type d -exec rm -fr {} \;
+	rm -rf .tox $(VENV) mail/ *.egg-info .pytest_cache .ruff_cache .coverage build dist
 
-install-kinto: $(VENV)/bin/kinto
-$(VENV)/bin/kinto: install
-	$(VENV)/bin/pip install kinto
-
-run-kinto: install-kinto
-	$(VENV)/bin/kinto start --ini kinto_emailer/tests/config/kinto.ini
+run-kinto: install
+	$(VENV)/bin/kinto start --ini tests/config/kinto.ini
 
 need-kinto-running:
 	@curl http://localhost:8888/v0/ 2>/dev/null 1>&2 || (echo "Run 'make run-kinto' before starting tests." && exit 1)
 
-functional: install-dev need-kinto-running
-	$(VENV)/bin/py.test kinto_emailer/tests/functional.py
+functional: install need-kinto-running
+	$(VENV)/bin/py.test tests/functional.py
