@@ -210,12 +210,3 @@ def includeme(config):
     config.add_subscriber(
         send_notification, AfterResourceChanged, for_resources=("record", "collection")
     )
-    # In case kinto-signer is installed, plug events.
-    try:
-        from kinto_signer.events import ReviewApproved, ReviewRejected, ReviewRequested
-
-        config.add_subscriber(send_notification, ReviewRequested)
-        config.add_subscriber(send_notification, ReviewApproved)
-        config.add_subscriber(send_notification, ReviewRejected)
-    except ImportError:  # pragma: no cover
-        pass

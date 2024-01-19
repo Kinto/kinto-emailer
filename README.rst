@@ -138,8 +138,8 @@ The possible filters are:
 * ``collection_id`` (default: all)
 * ``record_id`` (default: all)
 * ``event``: ``kinto.core.events.AfterResourceChanged`` (default), or
-  ``kinto_signer.events.ReviewRequested``, ``kinto_signer.events.ReviewApproved``,
-  ``kinto_signer.events.ReviewRejected``
+  ``kinto_remote_settings.signer.events.ReviewRequested``, ``kinto_remote_settings.signer.events.ReviewApproved``,
+  ``kinto_remote_settings.signer.events.ReviewRejected``
 
 If a filter value starts with the special character ``^``, then the matching will consider the filter value to be a regular expression.
 
