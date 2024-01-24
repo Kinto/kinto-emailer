@@ -20,6 +20,7 @@ jobs:
         run: make lint
 
   unit-tests:
+    needs: lint
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -38,6 +39,7 @@ jobs:
         run: make test
 
   functional-tests:
+    needs: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
