@@ -187,9 +187,9 @@ jsonschema-specifications==2023.12.1 \
     --hash=sha256:48a76787b3e70f5ed53f1160d2b81f586e4ca6d1548c5de7085d1682674764cc \
     --hash=sha256:87e4fdf3a94858b8a2ba2778d9ba57d8a9cafca7c7489c46ba0d30a8bc6a9c3c
     # via jsonschema
-kinto==18.1.1 \
-    --hash=sha256:bdc6ce11a1a4e6d34b1d7e90b8cec8fab092d449fd3dbc5b37a75c1e462b87b2 \
-    --hash=sha256:deb16051d79d459b31a9c40c1779c6983aa6098a04d707a12a74079b31187b8f
+kinto==19.3.1 \
+    --hash=sha256:a8cbc663b8a7e273d621f0a64feaf686e1716ff7e7631e505b091db0a5fb09cc \
+    --hash=sha256:c2668cecbd75e4c69a134b5869af1996d6ac2d1fc6334a4ab97d8a08fd2d98d0
     # via -r requirements.in
 logging-color-formatter==1.0.3 \
     --hash=sha256:495920c386d48cad9e9463a10f51b4deb95cab3b0185d02a36af67d66ae93787 \
