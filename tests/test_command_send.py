@@ -1,6 +1,7 @@
 import unittest
 
 import mock
+
 from kinto_emailer import command_send
 
 

@@ -7,6 +7,7 @@ from kinto import main as kinto_main
 from kinto.core import errors
 from kinto.core.events import AfterResourceChanged
 from kinto.core.testing import BaseWebTest, FormattedErrorMixin, get_user_headers
+
 from kinto_emailer import context_from_event, get_messages, send_notification
 
 
