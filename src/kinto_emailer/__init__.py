@@ -53,7 +53,7 @@ def send_notification(event):
 
     # Build every email for every impacted objects.
     messages = []
-    for impacted in event.impacted_records:
+    for impacted in event.impacted_objects:
         # Maybe context reliable on batch requests.
         # See Kinto/kinto#945
         _context = context.copy()
@@ -146,7 +146,7 @@ def _validate_emailer_settings(event):
     request = event.request
     resource_name = event.payload["resource_name"]
 
-    for impacted in event.impacted_records:
+    for impacted in event.impacted_objects:
         # See Kinto/kinto#945
         bid = impacted["new"]["id"] if resource_name == "bucket" else event.payload["bucket_id"]
         bucket_uri = "/buckets/{}".format(bid)
