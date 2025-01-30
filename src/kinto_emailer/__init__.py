@@ -78,11 +78,11 @@ def _get_emailer_hooks(storage, context):
     bucket_uri = "/buckets/%s" % bucket_id
     # Look-up collection metadata.
     metadata = storage.get(
-        parent_id=bucket_uri, collection_id="collection", object_id=collection_id
+        parent_id=bucket_uri, resource_name="collection", object_id=collection_id
     )
     if "kinto-emailer" not in metadata:
         # Try in bucket metadata.
-        metadata = storage.get(parent_id="", collection_id="bucket", object_id=bucket_id)
+        metadata = storage.get(parent_id="", resource_name="bucket", object_id=bucket_id)
     # Returns empty list of hooks.
     return metadata.get("kinto-emailer", {}).get("hooks", [])
 
@@ -95,7 +95,7 @@ def _expand_recipients(storage, recipients, context):
     for group_uri in groups:
         bucket_uri, group_id = group_uri.split("/groups/")
         try:
-            group = storage.get(parent_id=bucket_uri, collection_id="group", object_id=group_id)
+            group = storage.get(parent_id=bucket_uri, resource_name="group", object_id=group_id)
         except storage_exceptions.RecordNotFoundError:
             continue
         # Take out prefix from user ids (e.g. "ldap:mathieu@mozilla.com")
