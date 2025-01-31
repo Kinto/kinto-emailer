@@ -317,7 +317,7 @@ class GroupExpansionTest(unittest.TestCase):
         payload = {"bucket_id": "b", "collection_id": "c"}
         get_messages(self.storage, payload)
         self.storage.get.assert_called_with(
-            parent_id="/buckets/b", collection_id="group", object_id="c"
+            parent_id="/buckets/b", resource_name="group", object_id="c"
         )
 
 
@@ -338,7 +338,7 @@ class SendNotificationTest(unittest.TestCase):
 
     def test_send_notification_calls_the_mailer_if_match_event(self):
         event = mock.MagicMock()
-        event.impacted_records = [{"new": {"id": "a"}}]
+        event.impacted_objects = [{"new": {"id": "a"}}]
         event.payload = {
             "resource_name": "record",
             "action": "update",
@@ -354,7 +354,7 @@ class SendNotificationTest(unittest.TestCase):
 
     def test_send_notification_calls_the_mailer_queue_if_configured(self):
         event = mock.MagicMock()
-        event.impacted_records = [{"new": {"id": "a"}}]
+        event.impacted_objects = [{"new": {"id": "a"}}]
         event.payload = {
             "resource_name": "record",
             "action": "update",
