@@ -8,7 +8,7 @@ from kinto.core import errors
 from kinto.core.events import AfterResourceChanged
 from kinto.core.testing import BaseWebTest, FormattedErrorMixin, get_user_headers
 
-from kinto_emailer import context_from_event, get_messages, build_notification, send_notification
+from kinto_emailer import build_notification, context_from_event, get_messages, send_notification
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
