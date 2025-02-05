@@ -8,7 +8,7 @@ from kinto.core import errors
 from kinto.core.events import AfterResourceChanged
 from kinto.core.testing import BaseWebTest, FormattedErrorMixin, get_user_headers
 
-from kinto_emailer import context_from_event, get_messages, send_notification
+from kinto_emailer import context_from_event, get_messages, build_notification, send_notification
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -333,6 +333,7 @@ class SendNotificationTest(unittest.TestCase):
         event.request.registry.storage.get.return_value = {}
 
         with mock.patch("kinto_emailer.get_mailer") as get_mailer:
+            build_notification(event)
             send_notification(event)
             assert not get_mailer().send_immediately.called
 
@@ -349,6 +350,7 @@ class SendNotificationTest(unittest.TestCase):
         event.request.registry.settings = {}
 
         with mock.patch("kinto_emailer.get_mailer") as get_mailer:
+            build_notification(event)
             send_notification(event)
             assert get_mailer().send_immediately.called
 
@@ -365,6 +367,7 @@ class SendNotificationTest(unittest.TestCase):
         event.request.registry.settings = {"mail.queue_path": "/var/mail"}
 
         with mock.patch("kinto_emailer.get_mailer") as get_mailer:
+            build_notification(event)
             send_notification(event)
             assert get_mailer().send_to_queue.called
 
