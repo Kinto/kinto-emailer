@@ -177,7 +177,24 @@ To run the unit tests::
 
   $ make tests
 
-For the functional tests, run a Kinto instance in a separate terminal::
+Functional Tests
+''''''''''''''''
+
+A PostgreSQL database is required.
+
+Install and run PostgreSQL using your system package manager, or using Docker:
+
+::
+
+  $ docker run -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:15
+
+Create the test database:
+
+::
+
+  $ psql -c "CREATE DATABASE testdb ENCODING 'UTF8' TEMPLATE template0;" -U postgres -h localhost -p 5432
+
+Run a Kinto instance in a separate terminal::
 
   $ make run-kinto
 
@@ -185,6 +202,11 @@ And start the test suite::
 
   $ make functional
 
+.. note::
+
+    If you need to run PostgreSQL on a different user, password, or port than the default, then specify DB URL when running ``make run-kinto``::
+
+      $ KINTO_STORAGE_URL="postgresql://username:password@host:6666/dbname" make run-kinto
 
 Releasing
 =========
