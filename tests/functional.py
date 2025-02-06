@@ -1,4 +1,3 @@
-import configparser
 import os.path
 import shutil
 import unittest
@@ -19,9 +18,6 @@ class FunctionalTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(FunctionalTest, self).__init__(*args, **kwargs)
 
-        self.emailer_config = configparser.RawConfigParser()
-        self.emailer_config.read(os.path.join(__HERE__, "config/kinto.ini"))
-
         # Setup the kinto clients for the source and destination.
         self._auth = DEFAULT_AUTH
         self._server_url = SERVER_URL
@@ -34,11 +30,15 @@ class FunctionalTest(unittest.TestCase):
             bucket=self._bucket,
             collection=self._collection,
         )
+        # Since we use a PG database that can contain objects, start clean.
+        self._flush_server(self._server_url)
 
     def tearDown(self):
         # Delete all the created objects.
         self._flush_server(self._server_url)
+        # Delete all files but keep the folder for next runs.
         shutil.rmtree("mail/", ignore_errors=True)
+        os.makedirs("mail/")
 
     def _flush_server(self, server_url):
         flush_url = urljoin(server_url, "/__flush__")

@@ -35,6 +35,7 @@ build-backend = "setuptools.build_meta"
 [project.optional-dependencies]
 dev = [
     "ruff",
+    "kinto[postgresql]",
     "kinto-client",
     "kinto-signer",
     "mock",

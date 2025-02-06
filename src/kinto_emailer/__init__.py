@@ -45,10 +45,9 @@ def context_from_event(event):
     return context
 
 
-def send_notification(event):
-    settings = event.request.registry.settings
-    storage = event.request.registry.storage
+def build_notification(event):
     resource_name = event.payload["resource_name"]
+    storage = event.request.registry.storage
     context = context_from_event(event)
 
     # Build every email for every impacted objects.
@@ -61,6 +60,15 @@ def send_notification(event):
         _context[resource_name + "_id"] = _context["id"] = object_id
         messages += get_messages(storage, _context)
 
+    # Store the list in the current request, they will be sent from a
+    # post commit hook (we don't send them if DB transaction is rolledback).
+    setattr(event.request, "_kinto_emailer_messages", messages)
+
+
+def send_notification(event):
+    # At this point, we can't use `storage` because the transaction was committed.
+    messages = event.request._kinto_emailer_messages
+    settings = event.request.registry.settings
     mailer = get_mailer(event.request)
     try:
         for message in messages:
@@ -207,6 +215,9 @@ def includeme(config):
     )
 
     # Listen to collection and record change events.
+    config.add_subscriber(
+        build_notification, ResourceChanged, for_resources=("record", "collection")
+    )
     config.add_subscriber(
         send_notification, AfterResourceChanged, for_resources=("record", "collection")
     )
