@@ -178,7 +178,7 @@ To run the unit tests::
   $ make tests
 
 Functional Tests
-''''''''''''''''
+----------------
 
 A PostgreSQL database is required.
 
