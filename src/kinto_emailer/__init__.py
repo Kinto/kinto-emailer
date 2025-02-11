@@ -86,7 +86,7 @@ def _get_emailer_hooks(storage, context):
     collection_id = context["collection_id"]
     bucket_uri = "/buckets/%s" % bucket_id
     # Look-up collection metadata.
-    # If the event on the collection, do not rely storage, use the event payload.
+    # If the event is on the collection, do not rely on storage, use the event payload.
     if context["resource_name"] == "collection":
         metadata = next(
             impacted["old"] if context["action"] == "delete" else impacted["new"]
