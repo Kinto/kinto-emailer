@@ -95,6 +95,7 @@ class GetMessagesTest(unittest.TestCase):
             "collection_id": "c",
             "resource_name": "record",
             "action": "update",
+            "impacted_objects": [{"new": {}, "old": {}}],
         }
 
     def test_get_messages_returns_configured_messages_for_records(self):
@@ -269,7 +270,7 @@ class BucketTest(unittest.TestCase):
             }
         }
         storage.get.side_effect = [collection_metadata, bucket_metadata]
-        payload = {"bucket_id": "b", "collection_id": "c"}
+        payload = {"bucket_id": "b", "collection_id": "c", "resource_name": "record"}
         (message,) = get_messages(storage, payload)
         assert message.recipients == ["from@bucket.com"]
 
@@ -288,18 +289,17 @@ class GroupExpansionTest(unittest.TestCase):
             }
         }
         self.group_record = {"members": ["fxa:225689876", "portier:devnull@localhost.com"]}
+        self.payload = {"bucket_id": "b", "collection_id": "c", "resource_name": "record"}
         self.storage.get.side_effect = [self.collection_record, self.group_record]
 
     def test_recipients_are_expanded_from_group_members(self):
-        payload = {"bucket_id": "b", "collection_id": "c"}
-        (message,) = get_messages(self.storage, payload)
+        (message,) = get_messages(self.storage, self.payload)
         assert message.recipients == ["devnull@localhost.com"]
 
     def test_no_message_no_email_in_group_members(self):
         group_record = {"members": ["fxa:225689876", "basicauth:toto-la-mamposina"]}
         self.storage.get.side_effect = [self.collection_record, group_record]
-        payload = {"bucket_id": "b", "collection_id": "c"}
-        messages = get_messages(self.storage, payload)
+        messages = get_messages(self.storage, self.payload)
         assert not messages
 
     def test_email_group_can_contain_placeholders(self):
@@ -314,8 +314,7 @@ class GroupExpansionTest(unittest.TestCase):
             }
         }
         self.storage.get.side_effect = [collection_record, self.group_record]
-        payload = {"bucket_id": "b", "collection_id": "c"}
-        get_messages(self.storage, payload)
+        get_messages(self.storage, self.payload)
         self.storage.get.assert_called_with(
             parent_id="/buckets/b", resource_name="group", object_id="c"
         )

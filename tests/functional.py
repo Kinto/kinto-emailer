@@ -16,20 +16,17 @@ DEFAULT_AUTH = ("user", "p4ssw0rd")
 
 class FunctionalTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
-        super(FunctionalTest, self).__init__(*args, **kwargs)
-
-        # Setup the kinto clients for the source and destination.
-        self._auth = DEFAULT_AUTH
+        super().__init__(*args, **kwargs)
         self._server_url = SERVER_URL
-        self._bucket = "emailer"
-        self._collection = "collection1"
-
         self.client = Client(
             server_url=self._server_url,
-            auth=self._auth,
-            bucket=self._bucket,
-            collection=self._collection,
+            auth=DEFAULT_AUTH,
+            bucket="emailer",
+            collection="collection1",
         )
+
+    def setUp(self):
+        super().setUp()
         # Since we use a PG database that can contain objects, start clean.
         self._flush_server(self._server_url)
 
@@ -76,6 +73,32 @@ class FunctionalTest(unittest.TestCase):
         assert "Action on http://localhost:8888/v1/" in body
         assert "127.0.0.1=20edited" in body
         assert "emailer/collection1/{}".format(record["id"]) in body
+
+    def test_delete_collection_sends_email(self):
+        self.client.create_bucket()
+        self.client.create_collection(
+            data={
+                "kinto-emailer": {
+                    "hooks": [
+                        {
+                            "resource_name": "collection",
+                            "action": "delete",
+                            "subject": "Collection {bucket_id}/{collection_id} was deleted",
+                            "template": "(no body)",
+                            "recipients": ["whatever@filesystem.local"],
+                        }
+                    ]
+                }
+            }
+        )
+
+        self.client.delete_collection()
+
+        filename = glob("mail/*.eml")[0]
+        with open(filename, "r") as f:
+            body = f.read()
+
+        assert "Collection emailer/collection1 was deleted" in body
 
 
 if __name__ == "__main__":
