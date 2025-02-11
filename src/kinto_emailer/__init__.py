@@ -33,6 +33,7 @@ def context_from_event(event):
         root_url=root_url,
         client_address=event.request.client_addr,
         user_agent=event.request.user_agent,
+        impacted_objects=event.impacted_objects,
         **event.payload,
     )
 
@@ -85,9 +86,18 @@ def _get_emailer_hooks(storage, context):
     collection_id = context["collection_id"]
     bucket_uri = "/buckets/%s" % bucket_id
     # Look-up collection metadata.
-    metadata = storage.get(
-        parent_id=bucket_uri, resource_name="collection", object_id=collection_id
-    )
+    # If the event on the collection, do not rely storage, use the event payload.
+    if context["resource_name"] == "collection":
+        metadata = next(
+            impacted["old"] if context["action"] == "delete" else impacted["new"]
+            for impacted in context["impacted_objects"]
+        )
+    else:
+        # For records, look up storage.
+        metadata = storage.get(
+            parent_id=bucket_uri, resource_name="collection", object_id=collection_id
+        )
+
     if "kinto-emailer" not in metadata:
         # Try in bucket metadata.
         metadata = storage.get(parent_id="", resource_name="bucket", object_id=bucket_id)
