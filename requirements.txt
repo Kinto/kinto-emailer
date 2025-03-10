@@ -138,23 +138,11 @@ charset-normalizer==3.3.2 \
 colander==2.0 \
     --hash=sha256:419cd68178d2ee6ee4cae5d5cb1830725634b0a2840917156e89eb2592237ef3 \
     --hash=sha256:cb6b929fd0e79cdd3d310d3229e8f7884bd4fddd5cbf1d882063a6fb283b272b
-    # via
-    #   cornice-swagger
-    #   kinto
+    # via kinto
 colorama==0.4.6 \
     --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44 \
     --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
     # via logging-color-formatter
-cornice==6.0.1 \
-    --hash=sha256:6edf6f206ff1c3d108d7a7b9ae640a2f4737cfc04f0914ccc4eefe511d3a8985 \
-    --hash=sha256:7530ee9d824fe58c851f28b505e697541f6b05e098fe6dac14d9d26091d6fbda
-    # via
-    #   cornice-swagger
-    #   kinto
-cornice-swagger==1.0.1 \
-    --hash=sha256:94baebb818eb79a458497b3b924aacf340af85057abfdba7faa81e20c4d59b84 \
-    --hash=sha256:98a63c139af8297e8494ffa4e9f3fe8226a55b8850abb3b65ca555b25105fc34
-    # via kinto
 dockerflow==2024.1.0 \
     --hash=sha256:38d6a60a01e87d33dcf802f1ef2f09ae2f375c829d3805923d88409387562d66 \
     --hash=sha256:df1597fb3d58d759993e5b5e7f254162804882c04c09d5b7df97aa47b0a9d15b
@@ -187,9 +175,9 @@ jsonschema-specifications==2023.12.1 \
     --hash=sha256:48a76787b3e70f5ed53f1160d2b81f586e4ca6d1548c5de7085d1682674764cc \
     --hash=sha256:87e4fdf3a94858b8a2ba2778d9ba57d8a9cafca7c7489c46ba0d30a8bc6a9c3c
     # via jsonschema
-kinto==19.4.0 \
-    --hash=sha256:2d1153932bd7072253ffa1427bce98f190f09fdee627d0dc66bfefff49c12c8d \
-    --hash=sha256:441fb7fd2a091bf426ee67f9b3bc58bbd2dd9a94e21b1b024b7a49507342204b
+kinto==20.0.0 \
+    --hash=sha256:3ce842d2eca4edbca776c0092018af543e69c7550ab3e0dc126cf7031c3e5911 \
+    --hash=sha256:bb71bc5426f9941de24e002c9301fae059f2d489c534952d3dcf38e24ccbee68
     # via -r requirements.in
 logging-color-formatter==1.0.3 \
     --hash=sha256:495920c386d48cad9e9463a10f51b4deb95cab3b0185d02a36af67d66ae93787 \
@@ -213,7 +201,6 @@ pyramid==2.0.2 \
     --hash=sha256:2e6585ac55c147f0a51bc00dadf72075b3bdd9a871b332ff9e5e04117ccd76fa \
     --hash=sha256:372138a738e4216535cc76dcce6eddd5a1aaca95130f2354fb834264c06f18de
     # via
-    #   cornice
     #   kinto
     #   pyramid-mailer
     #   pyramid-multiauth
@@ -221,9 +208,7 @@ pyramid==2.0.2 \
 pyramid-mailer==0.15.1 \
     --hash=sha256:28d4a7829ebc19dd40e712d8cb1998cec03c296ba675b2c112a503539738bdc1 \
     --hash=sha256:ec0aff54d9179b2aa2922ff82c2016a4dc8d1da5dc3408d6594f0e2096446f9b
-    # via
-    #   -r requirements.in
-    #   kinto
+    # via -r requirements.in
 pyramid-multiauth==1.0.1 \
     --hash=sha256:6d8785558e1d0bbe0d0da43e296efc0fbe0de5071d1f9b1091e891f0e4ec9682 \
     --hash=sha256:c265258af8021094e5b98602e8bfe094eec1350eebb56473f36cd0e076910822
@@ -419,9 +404,7 @@ rpds-py==0.17.1 \
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
-    # via
-    #   cornice-swagger
-    #   python-dateutil
+    # via python-dateutil
 transaction==4.0 \
     --hash=sha256:68035db913f60d1be12f6563d201daab36c83e763de15899ff8338f26e5e62f2 \
     --hash=sha256:e2519a316a05b14b3d483ac777df311087daaffeeafd3e9f7de62fc087ce3209
@@ -443,9 +426,7 @@ urllib3==2.2.2 \
 venusian==3.1.0 \
     --hash=sha256:d1fb1e49927f42573f6c9b7c4fcf61c892af8fdcaa2314daa01d9a560b23488d \
     --hash=sha256:eb72cdca6f3139a15dc80f9c95d3c10f8a54a0ba881eeef8e2ec5b42d3ee3a95
-    # via
-    #   cornice
-    #   pyramid
+    # via pyramid
 waitress==3.0.1 \
     --hash=sha256:26cdbc593093a15119351690752c99adc13cbc6786d75f7b6341d1234a3730ac \
     --hash=sha256:ef0c1f020d9f12a515c4ec65c07920a702613afcad1dbfdc3bcec256b6c072b3
@@ -501,9 +482,9 @@ zope-interface==6.1 \
     #   transaction
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==75.8.0 \
-    --hash=sha256:c5afc8f407c626b8313a86e10311dd3f661c6cd9c09d4bf8c15c0e11f9f2b0e6 \
-    --hash=sha256:e3982f444617239225d675215d51f6ba05f845d4eec313da4418fdbb56fb27e3
+setuptools==76.0.0 \
+    --hash=sha256:199466a166ff664970d0ee145839f5582cb9bca7a0a3a2e795b6a9cb2308e9c6 \
+    --hash=sha256:43b4ee60e10b0d0ee98ad11918e114c70701bc6051662a9a675a0496c1a158f4
     # via
     #   pyramid
     #   repoze-sendmail
