@@ -37,7 +37,11 @@ def context_from_event(event):
         **event.payload,
     )
 
-    context["settings"] = event.request.registry.settings
+    context["settings"] = {
+        k: v
+        for k, v in event.request.registry.settings.items()
+        if k in ("project_name", "project_version", "url")
+    }
 
     # The following payload attributes are not always present.
     # See Kinto/kinto#945
