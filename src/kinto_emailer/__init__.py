@@ -31,6 +31,7 @@ def context_from_event(event):
     context = dict(
         event=qualname(event),
         root_url=root_url,
+        project_name=event.request.registry.settings.get("project_name", ""),
         client_address=event.request.client_addr,
         user_agent=event.request.user_agent,
         impacted_objects=event.impacted_objects,
