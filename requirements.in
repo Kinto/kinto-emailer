@@ -1,2 +1,3 @@
 kinto
 pyramid_mailer
+typing-extensions>=4.13.2
