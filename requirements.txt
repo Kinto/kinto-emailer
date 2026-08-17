@@ -325,9 +325,9 @@ jsonschema-specifications==2023.12.1 \
     --hash=sha256:48a76787b3e70f5ed53f1160d2b81f586e4ca6d1548c5de7085d1682674764cc \
     --hash=sha256:87e4fdf3a94858b8a2ba2778d9ba57d8a9cafca7c7489c46ba0d30a8bc6a9c3c
     # via jsonschema
-kinto==26.3.2 \
-    --hash=sha256:f8690ac15ac8702653f75f9a47965997676cf1077343123e9dda5d185f654761 \
-    --hash=sha256:ff76c58fff000fd61595be2cbcc3552a8fc9f91b00d599eb3cf158bc14e5ed9d
+kinto==26.3.3 \
+    --hash=sha256:6922346321d7edb75ba5616c09cf904426872f926929a366b73cc02f73cb5acd \
+    --hash=sha256:e1773cf3f10576934d01c95dae1e225b0073b0362ac3aa4ac43d423d8785dcd2
     # via -r requirements.in
 legacy-cgi==2.6.4 \
     --hash=sha256:7e235ce58bf1e25d1fc9b2d299015e4e2cd37305eccafec1e6bac3fc04b878cd \
@@ -359,9 +359,9 @@ pyjwt[crypto]==2.13.0 \
     --hash=sha256:41571c89ca91598c79e8ef18a2d07367d4810fbbd6f637794879baf1b7703423 \
     --hash=sha256:66adcc2aff09b3f1bbd95fc1e1577df8ac8723c978552fd43304c8a290ac5728
     # via kinto
-pyramid==2.0.2 \
-    --hash=sha256:2e6585ac55c147f0a51bc00dadf72075b3bdd9a871b332ff9e5e04117ccd76fa \
-    --hash=sha256:372138a738e4216535cc76dcce6eddd5a1aaca95130f2354fb834264c06f18de
+pyramid==2.1 \
+    --hash=sha256:0aa62604221f6a8ac6e77a0faa02a5b7a294d6675f15581d8d416dffe2ac98e7 \
+    --hash=sha256:5a24bc1b5f9e0f0d1c0b6ddd1111e84c15dac44a07e3c1d24e74dd9bb4fc22eb
     # via
     #   kinto
     #   pyramid-mailer
