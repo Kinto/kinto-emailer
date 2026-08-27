@@ -597,9 +597,9 @@ waitress==3.0.1 \
     --hash=sha256:26cdbc593093a15119351690752c99adc13cbc6786d75f7b6341d1234a3730ac \
     --hash=sha256:ef0c1f020d9f12a515c4ec65c07920a702613afcad1dbfdc3bcec256b6c072b3
     # via kinto
-webob==1.8.10 \
-    --hash=sha256:1c963a11f307bc3f624fbab9dde737701eae255f32981b7a5486a88db1767c2b \
-    --hash=sha256:e68ad87fda378191081965ab02a185391c26e4e926adec855c3b0286a8369d49
+webob==1.8.11 \
+    --hash=sha256:4addd1d38d6a7fbe0eda22d45f25a40d74c8b290f3a99c0ac3d4023cf21f2da2 \
+    --hash=sha256:aa8c27231070b135c025e567a9cd7eda03f4df71352ffaac740cb6a75f0f81a5
     # via pyramid
 zope-deprecation==5.0 \
     --hash=sha256:28c2ee983812efb4676d33c7a8c6ade0df191c1c6d652bbbfe6e2eeee067b2d4 \
