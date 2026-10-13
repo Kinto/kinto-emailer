@@ -325,9 +325,9 @@ jsonschema-specifications==2023.12.1 \
     --hash=sha256:48a76787b3e70f5ed53f1160d2b81f586e4ca6d1548c5de7085d1682674764cc \
     --hash=sha256:87e4fdf3a94858b8a2ba2778d9ba57d8a9cafca7c7489c46ba0d30a8bc6a9c3c
     # via jsonschema
-kinto==26.3.3 \
-    --hash=sha256:6922346321d7edb75ba5616c09cf904426872f926929a366b73cc02f73cb5acd \
-    --hash=sha256:e1773cf3f10576934d01c95dae1e225b0073b0362ac3aa4ac43d423d8785dcd2
+kinto==26.4.0 \
+    --hash=sha256:3339d2bf19db5ed749fbed4fe1655a10da6ac017aee1c18da73c0692b257c50c \
+    --hash=sha256:3bd69acc55251d55aa5edcc912d66ebde6f36c1620756003293a10e9db235059
     # via -r requirements.in
 legacy-cgi==2.6.4 \
     --hash=sha256:7e235ce58bf1e25d1fc9b2d299015e4e2cd37305eccafec1e6bac3fc04b878cd \
